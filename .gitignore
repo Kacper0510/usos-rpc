@@ -1,0 +1,8 @@
+.vscode/
+.vs/
+.idea/
+
+build/
+
+.DS_Store
+desktop.ini

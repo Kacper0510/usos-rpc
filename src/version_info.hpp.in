@@ -2,4 +2,4 @@
 
 // This file contains auto-generated CMake build info template.
 
-constexpr const char* USOS_RPC_VERSION = "@usos-rpc_VERSION_MAJOR@.@usos-rpc_VERSION_MINOR@.@usos-rpc_VERSION_PATCH@";
+constexpr const char* USOS_RPC_VERSION = "@usos-rpc_VERSION@";

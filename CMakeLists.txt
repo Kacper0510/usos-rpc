@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/../bin")
+set(BUILD_SHARED_LIBS OFF)
 
 # Main executable
 add_executable(usos-rpc)
@@ -25,3 +26,33 @@ target_compile_options(usos-rpc INTERFACE
   "$<${gcc_like_cxx}:-Wall;-Wextra;-Wshadow;-Wunused;-pedantic>"
   "$<${msvc_cxx}:-W3>"
 )
+
+# Dependencies
+include(FetchContent)
+
+## fmt
+set(fmt_version 10.2.1)
+FetchContent_Declare(
+  fmt
+  GIT_REPOSITORY "https://github.com/fmtlib/fmt.git"
+  GIT_TAG "${fmt_version}"
+)
+FetchContent_MakeAvailable(fmt)
+target_link_libraries(usos-rpc fmt::fmt)
+
+## libcurl
+set(curl_version 8_7_1)
+set(BUILD_CURL_EXE OFF)
+set(BUILD_STATIC_LIBS ON)
+set(CURL_DISABLE_INSTALL ON)
+set(ENABLE_UNICODE ON)
+set(CURL_LTO ON)
+set(ENABLE_CURL_MANUAL OFF)
+set(BUILD_LIBCURL_DOCS OFF)
+FetchContent_Declare(
+  curl
+  GIT_REPOSITORY "https://github.com/curl/curl.git"
+  GIT_TAG "curl-${curl_version}"
+)
+FetchContent_MakeAvailable(curl)
+target_link_libraries(usos-rpc libcurl)

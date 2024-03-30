@@ -49,6 +49,12 @@ set(ENABLE_UNICODE ON)
 set(CURL_LTO ON)
 set(ENABLE_CURL_MANUAL OFF)
 set(BUILD_LIBCURL_DOCS OFF)
+### Enable default TLS backends
+if(WIN32)
+  set(CURL_USE_SCHANNEL ON)
+else()
+  set(CURL_USE_OPENSSL ON)
+endif()
 FetchContent_Declare(
   curl
   GIT_REPOSITORY "https://github.com/curl/curl.git"

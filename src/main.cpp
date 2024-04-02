@@ -2,6 +2,7 @@
 
 #include "version_info.hpp"
 #include "requests.hpp"
+#include "files.hpp"
 
 #include "fmt/core.h"
 #include "curl/curl.h"
@@ -21,6 +22,8 @@ int main() {
     } catch (std::string err) {
         fmt::println(stderr, "Error:\n{}", err);
     }
+
+    fmt::println("Home path: {}", usos_rpc::get_config_directory()->string());
 
     return 0;
 }

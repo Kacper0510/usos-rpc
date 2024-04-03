@@ -2,7 +2,7 @@
 .vs/
 .idea/
 
-build/
+build*/
 bin/
 
 .DS_Store

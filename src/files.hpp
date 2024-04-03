@@ -4,29 +4,38 @@
 #include <cstdio>
 #include <memory>
 
-#ifdef _WIN32
-    #include "shlobj_core.h"
-#else
+#ifndef USOS_RPC_STD_ONLY
 
-#endif
+    #ifdef _WIN32
+        #include "shlobj_core.h"
+    #else
+        #include <unistd.h>
+        #include <pwd.h>
+    #endif
 
-namespace {
+    namespace {
 
-    /// @brief Returns system-specific home directory.
-    /// @return %AppData% on Windows, $HOME on Unix
-    std::filesystem::path get_home_directory() {
-        #ifdef _WIN32
-            PWSTR result = nullptr;
-            SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_CREATE, nullptr, &result);
-            std::filesystem::path dir(result);
-            CoTaskMemFree(result);
-            return dir;
-        #else
-            // TODO
-        #endif
+        /// @brief Returns system-specific home directory.
+        /// @return %AppData% on Windows, $HOME on Unix
+        std::filesystem::path get_home_directory() {
+            #ifdef _WIN32
+                PWSTR result = nullptr;
+                SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_CREATE, nullptr, &result);
+                std::filesystem::path dir(result);
+                CoTaskMemFree(result);
+                return dir;
+            #else
+                const char* home = std::getenv("HOME");
+                if (home == nullptr) {
+                    home = getpwuid(getuid())->pw_dir;
+                }
+                return std::filesystem::path(home);
+            #endif
+        }
+
     }
 
-}
+#endif
 
 namespace usos_rpc {
 
@@ -51,17 +60,19 @@ namespace usos_rpc {
         }
 
         // home directory or AppData
-        path home = get_home_directory();
-        if (is_directory(home)) {
-            home /= "usos-rpc";
-            if (!exists(home)) {
-                create_directory(home);
-            }
+        #ifndef USOS_RPC_STD_ONLY
+            path home = get_home_directory();
             if (is_directory(home)) {
-                cache = std::make_unique<path>(home);
-                return cache.get();
+                home /= "usos-rpc";
+                if (!exists(home)) {
+                    create_directory(home);
+                }
+                if (is_directory(home)) {
+                    cache = std::make_unique<path>(home);
+                    return cache.get();
+                }
             }
-        }
+        #endif
 
         // last hope
         cache = std::make_unique<path>(current_path());

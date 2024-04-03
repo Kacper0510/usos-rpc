@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.27)
+cmake_minimum_required(VERSION 3.22)
 project(usos-rpc VERSION 1.0.0)
 
 # CMake setup
@@ -8,11 +8,17 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/../bin")
 set(BUILD_SHARED_LIBS OFF)
 
+# Options
+option(USOS_RPC_STD_ONLY "Disables system specific headers")
+
 # Main executable
 add_executable(usos-rpc)
 target_include_directories(usos-rpc PRIVATE "src")
 file(GLOB sources "src/*.cpp" "src/*.hpp")
 target_sources(usos-rpc PRIVATE ${sources})
+if(USOS_RPC_STD_ONLY)
+  target_compile_definitions(usos-rpc PRIVATE USOS_RPC_STD_ONLY)
+endif()
 
 # Version information header
 target_include_directories(usos-rpc PRIVATE "${PROJECT_BINARY_DIR}")
@@ -26,6 +32,14 @@ target_compile_options(usos-rpc INTERFACE
   "$<${gcc_like_cxx}:-Wall;-Wextra;-Wshadow;-Wunused;-pedantic>"
   "$<${msvc_cxx}:-W3>"
 )
+
+# Link time optimizations
+include(CheckIPOSupported)
+check_ipo_supported(RESULT lto_supported)
+if(lto_supported)
+  set_property(TARGET usos-rpc PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+  set(CURL_LTO ON)
+endif()
 
 # Dependencies
 include(FetchContent)
@@ -46,7 +60,6 @@ set(BUILD_CURL_EXE OFF)
 set(BUILD_STATIC_LIBS ON)
 set(CURL_DISABLE_INSTALL ON)
 set(ENABLE_UNICODE ON)
-set(CURL_LTO ON)
 set(ENABLE_CURL_MANUAL OFF)
 set(BUILD_LIBCURL_DOCS OFF)
 ### Enable default TLS backends

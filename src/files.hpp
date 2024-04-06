@@ -3,6 +3,9 @@
 #include <filesystem>
 #include <cstdio>
 #include <memory>
+#include <fstream>
+
+#include "fmt/core.h"
 
 #ifndef USOS_RPC_STD_ONLY
 
@@ -42,7 +45,7 @@ namespace usos_rpc {
     /// @brief Returns config directory path based on the value of environmental variable USOS_RPC_DIR or user's home directory. 
     /// The path is cached after the first call.
     /// @return guaranteed-to-be-valid directory path
-    const std::filesystem::path* get_config_directory() {
+    const std::filesystem::path* const get_config_directory() {
         using namespace std::filesystem;
         static std::unique_ptr<path> cache = nullptr;
         if (cache) {
@@ -77,6 +80,18 @@ namespace usos_rpc {
         // last hope
         cache = std::make_unique<path>(current_path());
         return cache.get();
+    }
+
+    /// @brief Reads file contents.
+    /// @param path file path to read
+    /// @return file contents
+    std::string read_file(const std::string& path) {
+        std::ifstream reader(path);
+        reader.exceptions(std::ios_base::badbit);
+        if (!reader) {
+            throw fmt::format("Cannot read file contents ({})!", path);
+        }
+        return std::string(std::istreambuf_iterator<char>(reader), std::istreambuf_iterator<char>());
     }
 
 }

@@ -1,12 +1,13 @@
 #pragma once
 
-#include <filesystem>
 #include <cstdio>
-#include <memory>
+#include <filesystem>
 #include <fstream>
+#include <memory>
 
 #include "fmt/core.h"
 
+// clang-format off
 #ifndef USOS_RPC_STD_ONLY
 
     #ifdef _WIN32
@@ -39,12 +40,14 @@
     }
 
 #endif
+// clang-format on
 
 namespace usos_rpc {
 
-    /// @brief Returns config directory path based on the value of environmental variable USOS_RPC_DIR or user's home directory. 
-    /// The path is cached after the first call.
+    /// @brief Returns config directory path based on the value of environmental variable USOS_RPC_DIR
+    /// or user's home directory. The path is cached after the first call.
     /// @return guaranteed-to-be-valid directory path
+    // clang-format off
     const std::filesystem::path* const get_config_directory() {
         using namespace std::filesystem;
         static std::unique_ptr<path> cache = nullptr;
@@ -81,6 +84,8 @@ namespace usos_rpc {
         cache = std::make_unique<path>(current_path());
         return cache.get();
     }
+
+    // clang-format on
 
     /// @brief Reads file contents.
     /// @param path file path to read

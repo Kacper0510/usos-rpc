@@ -3,8 +3,8 @@
 #include <string>
 #include <string_view>
 
-#include "version_info.hpp"
 #include "files.hpp"
+#include "version_info.hpp"
 
 #include "curl/curl.h"
 #include "fmt/core.h"
@@ -18,7 +18,7 @@ namespace {
     /// @param nmemb length of the buffer
     /// @param userp pointer to user data, in this case - std::string
     /// @return the value of nmemb, signifying no error
-    std::size_t libcurl_callback(const char *buffer, std::size_t size, std::size_t nmemb, void *userp) {
+    std::size_t libcurl_callback(const char* buffer, std::size_t size, std::size_t nmemb, void* userp) {
         size *= nmemb;
 
         auto str = (std::string*) userp;
@@ -32,7 +32,7 @@ namespace {
     /// @param string
     /// @return N - 1
     template <std::size_t N>
-    constexpr std::size_t const_string_length(char const (&)[N]) {
+    constexpr std::size_t const_string_length(const char (&)[N]) {
         return N - 1;
     }
 

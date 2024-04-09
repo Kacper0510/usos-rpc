@@ -116,3 +116,4 @@ Standard: Latest
 UseTab: Never
 TabWidth: 4
 VerilogBreakBetweenInstancePorts: true
+ConstructorInitializerIndentWidth: 0

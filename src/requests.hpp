@@ -4,6 +4,7 @@
 #include <string_view>
 
 #include "files.hpp"
+#include "utilities.hpp"
 #include "version_info.hpp"
 
 #include "curl/curl.h"
@@ -25,15 +26,6 @@ namespace {
         str->append(buffer, size);
 
         return size;
-    }
-
-    /// @brief calculates C-string's length at compile time
-    /// @tparam N length that will be returned
-    /// @param string
-    /// @return N - 1
-    template <std::size_t N>
-    constexpr std::size_t const_string_length(const char (&)[N]) {
-        return N - 1;
     }
 
 }

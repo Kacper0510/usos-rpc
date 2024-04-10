@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <string>
+#include <tuple>
 
 #include "utilities.hpp"
 
@@ -10,25 +11,25 @@ namespace usos_rpc::icalendar {
     /// @brief Represents a single event in the timetable, for example a lecture or a class.
     class Event {
         /// @brief Unique identifier of the event.
-        std::string uid;
+        std::string _uid;
         /// @brief University subject.
-        std::string subject;
+        std::string _subject;
         /// @brief Event type abbreviation, meaning for example a lecture or lab classes.
-        std::string type;
+        std::string _type;
         /// @brief URL pointing at the event in the Web version of USOS.
-        std::string url;
+        std::string _url;
 
         /// @brief Event location.
         struct Location {
             std::string room;
             std::string building;
             std::string address;
-        } location;
+        } _location;
 
         /// @brief Date and time of the beginning of the event.
-        std::chrono::local_seconds start;
+        std::chrono::local_seconds _start;
         /// @brief Date and time of the end of the event.
-        std::chrono::local_seconds end;
+        std::chrono::local_seconds _end;
 
     public:
 
@@ -47,44 +48,99 @@ namespace usos_rpc::icalendar {
             const std::string& description,
             const std::string& location
         ):
-        uid(uid) {
+        _uid(uid) {
             auto summary_parts = split(summary, " - ");
             switch (summary_parts.size()) {
                 case 2:
-                    subject = summary_parts[1];
-                    type = summary_parts[0];
+                    _subject = summary_parts[1];
+                    _type = summary_parts[0];
                     break;
                 case 1:
-                    subject = summary_parts[0];
-                    type = "?";
+                    _subject = summary_parts[0];
+                    _type = "?";
                     break;
                 default:
-                    subject = summary;
-                    type = "?";
+                    _subject = summary;
+                    _type = "?";
                     break;
             }
 
             std::istringstream start_stream(dtstart);
             start_stream.exceptions(std::ios_base::badbit);
-            start_stream >> std::chrono::parse("%Y%m%dT%H%M%S", start);
+            start_stream >> std::chrono::parse("%Y%m%dT%H%M%S", _start);
             std::istringstream end_stream(dtend);
             end_stream.exceptions(std::ios_base::badbit);
-            end_stream >> std::chrono::parse("%Y%m%dT%H%M%S", end);
+            end_stream >> std::chrono::parse("%Y%m%dT%H%M%S", _end);
 
-            auto description_parts = split(description, "\n");
+            auto description_parts = split(description, "\\n");
             if (description_parts.size() == 3) {
                 auto room_split = split(description_parts[0], ": ");
                 auto room = room_split.size() == 2 ? room_split[1] : description_parts[0];
-                this->location = { .room = room, .building = description_parts[1], .address = location };
-                url = description_parts[2];
+                _location = { .room = room, .building = description_parts[1], .address = location };
+                _url = description_parts[2];
             } else {
                 throw std::string("Invalid description format!");
             }
         }
 
-        /// @brief Copy constructor.
-        /// @param other event to copy
-        explicit Event(const Event& other) = default;
+        /// @brief Returns unique identifier of the event.
+        const std::string& uid() const {
+            return _uid;
+        }
+
+        /// @brief Returns university subject.
+        const std::string& subject() const {
+            return _subject;
+        }
+
+        /// @brief Returns event type abbreviation.
+        const std::string& type() const {
+            return _type;
+        }
+
+        /// @brief Returns URL pointing at the event in the Web version of USOS.
+        const std::string& url() const {
+            return _url;
+        }
+
+        /// @brief Returns event location.
+        const Location& location() const {
+            return _location;
+        }
+
+        /// @brief Returns date and time of the beginning of the event.
+        const std::chrono::local_seconds& start() const {
+            return _start;
+        }
+
+        /// @brief Returns date and time of the end of the event.
+        const std::chrono::local_seconds& end() const {
+            return _end;
+        }
+
+        /// @brief Returns date and time of the beginning of the event as a zoned time.
+        const std::chrono::zoned_seconds start(const std::chrono::time_zone* tz) const {
+            return std::chrono::zoned_seconds(tz, _start);
+        }
+
+        /// @brief Returns date and time of the end of the event as a zoned time.
+        const std::chrono::zoned_seconds end(const std::chrono::time_zone* tz) const {
+            return std::chrono::zoned_seconds(tz, _end);
+        }
+
+        /// @brief Compares by unique identifier.
+        /// @param other event to compare
+        /// @return true if equal
+        bool operator==(const Event& other) const {
+            return _uid == other._uid;
+        }
+
+        /// @brief Compares by time of start, then end, then unique identifier.
+        /// @param other event to compare
+        /// @return comparison result
+        auto operator<=>(const Event& other) const {
+            return std::tie(_start, _end, _uid) <=> std::tie(other._start, other._end, other._uid);
+        }
     };
 
 }

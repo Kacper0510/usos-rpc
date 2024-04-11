@@ -21,6 +21,7 @@
 
         /// @brief Returns system-specific home directory.
         /// @return %AppData% on Windows, $HOME on Unix
+        [[nodiscard]]
         std::filesystem::path get_home_directory() {
             #ifdef _WIN32
                 PWSTR result = nullptr;
@@ -48,6 +49,7 @@ namespace usos_rpc {
     /// or user's home directory. The path is cached after the first call.
     /// @return guaranteed-to-be-valid directory path
     // clang-format off
+    [[nodiscard]]
     const std::filesystem::path* const get_config_directory() {
         using namespace std::filesystem;
         static std::unique_ptr<path> cache = nullptr;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <optional>
 #include <string>
 #include <tuple>
 
@@ -15,14 +16,14 @@ namespace usos_rpc::icalendar {
         /// @brief University subject.
         std::string _subject;
         /// @brief Event type abbreviation, meaning for example a lecture or lab classes.
-        std::string _type;
+        std::optional<std::string> _type;
         /// @brief URL pointing at the event in the Web version of USOS.
-        std::string _url;
+        std::optional<std::string> _url;
 
         /// @brief Event location.
         struct Location {
-            std::string room;
-            std::string building;
+            std::optional<std::string> room;
+            std::optional<std::string> building;
             std::string address;
         } _location;
 
@@ -32,6 +33,8 @@ namespace usos_rpc::icalendar {
         std::chrono::local_seconds _end;
 
     public:
+
+        Event() = delete;
 
         /// @brief Constructor based on VEVENT format.
         /// @param summary contains subject and type
@@ -57,11 +60,9 @@ namespace usos_rpc::icalendar {
                     break;
                 case 1:
                     _subject = summary_parts[0];
-                    _type = "?";
                     break;
                 default:
                     _subject = summary;
-                    _type = "?";
                     break;
             }
 
@@ -79,51 +80,60 @@ namespace usos_rpc::icalendar {
                 _location = { .room = room, .building = description_parts[1], .address = location };
                 _url = description_parts[2];
             } else {
-                throw std::string("Invalid description format!");
+                _location = { .address = location };
             }
         }
 
         /// @brief Returns unique identifier of the event.
+        [[nodiscard]]
         const std::string& uid() const {
             return _uid;
         }
 
         /// @brief Returns university subject.
+        [[nodiscard]]
         const std::string& subject() const {
             return _subject;
         }
 
         /// @brief Returns event type abbreviation.
-        const std::string& type() const {
+        [[nodiscard]]
+        const std::optional<std::string>& type() const {
             return _type;
         }
 
         /// @brief Returns URL pointing at the event in the Web version of USOS.
-        const std::string& url() const {
+        [[nodiscard]]
+        const std::optional<std::string>& url() const {
             return _url;
         }
 
         /// @brief Returns event location.
+        [[nodiscard]]
         const Location& location() const {
             return _location;
         }
 
         /// @brief Returns date and time of the beginning of the event.
+        [[nodiscard]]
         const std::chrono::local_seconds& start() const {
             return _start;
         }
 
         /// @brief Returns date and time of the end of the event.
+        [[nodiscard]]
         const std::chrono::local_seconds& end() const {
             return _end;
         }
 
         /// @brief Returns date and time of the beginning of the event as a zoned time.
+        [[nodiscard]]
         const std::chrono::zoned_seconds start(const std::chrono::time_zone* tz) const {
             return std::chrono::zoned_seconds(tz, _start);
         }
 
         /// @brief Returns date and time of the end of the event as a zoned time.
+        [[nodiscard]]
         const std::chrono::zoned_seconds end(const std::chrono::time_zone* tz) const {
             return std::chrono::zoned_seconds(tz, _end);
         }

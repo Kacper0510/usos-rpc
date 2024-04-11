@@ -19,6 +19,7 @@ namespace usos_rpc {
     /// @param input string to split
     /// @param delimiter where to split
     /// @return vector of strings
+    [[nodiscard]]
     std::vector<std::string> split(const std::string& input, const std::string& delimiter) {
         std::vector<std::string> result;
         std::size_t start = 0;
@@ -31,5 +32,4 @@ namespace usos_rpc {
         result.push_back(input.substr(start, end));
         return result;
     }
-
 }

@@ -5,7 +5,7 @@
 #include <fstream>
 #include <memory>
 
-#include "fmt/core.h"
+#include "exceptions.hpp"
 
 // clang-format off
 #ifndef USOS_RPC_STD_ONLY
@@ -94,11 +94,16 @@ namespace usos_rpc {
     /// @return file contents
     std::string read_file(const std::string& path) {
         std::ifstream reader(path);
-        reader.exceptions(std::ios_base::badbit);
         if (!reader) {
-            throw fmt::format("Cannot read file contents ({})!", path);
+            throw Exception(ExceptionType::IO_ERROR, "Cannot read file contents ({})!", path);
         }
-        return std::string(std::istreambuf_iterator<char>(reader), std::istreambuf_iterator<char>());
+        reader.exceptions(std::ios_base::badbit);
+        
+        try {
+            return std::string(std::istreambuf_iterator<char>(reader), std::istreambuf_iterator<char>());
+        } catch (const std::ios_base::failure& err) {
+            throw Exception(ExceptionType::IO_ERROR, "Cannot read file contents ({})!", path);
+        }
     }
 
 }

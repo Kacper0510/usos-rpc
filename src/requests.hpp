@@ -3,12 +3,12 @@
 #include <string>
 #include <string_view>
 
+#include "exceptions.hpp"
 #include "files.hpp"
 #include "utilities.hpp"
 #include "version_info.hpp"
 
 #include "curl/curl.h"
-#include "fmt/core.h"
 
 namespace {
 
@@ -38,7 +38,7 @@ namespace usos_rpc {
     std::string http_get(const char* url) {
         auto handle = curl_easy_init();
         if (!handle) {
-            throw std::string("Failed to initialize Curl!");
+            throw Exception(ExceptionType::CURL_ERROR, "Failed to initialize Curl!");
         }
 
         std::string response;
@@ -51,7 +51,7 @@ namespace usos_rpc {
 
         curl_easy_cleanup(handle);
         if (success != 0) {
-            throw fmt::format("Request failed: {}", curl_easy_strerror(success));
+            throw Exception(ExceptionType::CURL_ERROR, "Request failed: {}", curl_easy_strerror(success));
         }
         return response;
     }

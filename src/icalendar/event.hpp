@@ -5,6 +5,7 @@
 #include <string>
 #include <tuple>
 
+#include "../exceptions.hpp"
 #include "utilities.hpp"
 
 namespace usos_rpc::icalendar {
@@ -33,7 +34,6 @@ namespace usos_rpc::icalendar {
         std::chrono::local_seconds _end;
 
     public:
-
         Event() = delete;
 
         /// @brief Constructor based on VEVENT format.
@@ -43,6 +43,7 @@ namespace usos_rpc::icalendar {
         /// @param uid identifier
         /// @param description contains partial location and URL
         /// @param location address
+        /// @throws Exception when timestamp parsing fails
         Event(
             const std::string& summary,
             const std::string& dtstart,
@@ -66,12 +67,16 @@ namespace usos_rpc::icalendar {
                     break;
             }
 
-            std::istringstream start_stream(dtstart);
-            start_stream.exceptions(std::ios_base::badbit);
-            start_stream >> std::chrono::parse("%Y%m%dT%H%M%S", _start);
-            std::istringstream end_stream(dtend);
-            end_stream.exceptions(std::ios_base::badbit);
-            end_stream >> std::chrono::parse("%Y%m%dT%H%M%S", _end);
+            try {
+                std::istringstream start_stream(dtstart);
+                start_stream.exceptions(std::ios_base::badbit);
+                start_stream >> std::chrono::parse("%Y%m%dT%H%M%S", _start);
+                std::istringstream end_stream(dtend);
+                end_stream.exceptions(std::ios_base::badbit);
+                end_stream >> std::chrono::parse("%Y%m%dT%H%M%S", _end);
+            } catch (const std::ios_base::failure& err) {
+                throw Exception(ExceptionType::PARSE_ERROR, "Could not parse event timestamp!");
+            }
 
             auto description_parts = split(description, "\\n");
             if (description_parts.size() == 3) {

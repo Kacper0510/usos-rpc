@@ -18,12 +18,14 @@ file(GLOB sources "src/*.cpp" "src/*.hpp")
 target_sources(usos-rpc PRIVATE ${sources})
 if(USOS_RPC_STD_ONLY)
   target_compile_definitions(usos-rpc PRIVATE USOS_RPC_STD_ONLY)
+  message("[usos-rpc] Disabled system specific library calls")
 endif()
 
 # Version information header
 target_include_directories(usos-rpc PRIVATE "${PROJECT_BINARY_DIR}")
 configure_file("src/version_info.hpp.in" "version_info.hpp")
 target_sources(usos-rpc PRIVATE "${PROJECT_BINARY_DIR}/version_info.hpp")
+message("[usos-rpc] Exported version_info.hpp")
 
 # Additional warnings
 set(gcc_like_cxx "$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU,LCC>")
@@ -39,6 +41,7 @@ check_ipo_supported(RESULT lto_supported)
 if(lto_supported)
   set_property(TARGET usos-rpc PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
   set(CURL_LTO ON)
+  message("[usos-rpc] Enabled link time optimization")
 endif()
 
 # Dependencies
@@ -53,6 +56,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(fmt)
 target_link_libraries(usos-rpc fmt::fmt)
+message("[usos-rpc] Completed fetching 'fmt'")
 
 ## libcurl
 set(curl_version 8_7_1)
@@ -75,3 +79,4 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(curl)
 target_link_libraries(usos-rpc libcurl)
+message("[usos-rpc] Completed fetching 'libcurl'")

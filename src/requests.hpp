@@ -35,6 +35,7 @@ namespace usos_rpc {
     /// @brief Performs a simple HTTP GET request.
     /// @param url URL of the request
     /// @return response data
+    /// @throws Exception when the request or libcurl fails
     std::string http_get(const char* url) {
         auto handle = curl_easy_init();
         if (!handle) {
@@ -60,6 +61,7 @@ namespace usos_rpc {
     /// If the URI protocol is webcal(s), it is translated to http(s) accordingly.
     /// @param path URI or file path
     /// @return response data
+    /// @throws Exception when the underlying function calls fail
     std::string fetch_content(const std::string& path) {
         if (path.starts_with("webcal://")) {
             std::string_view real_path(path.begin() + const_string_length("webcal://"), path.end());

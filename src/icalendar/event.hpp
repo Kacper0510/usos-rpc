@@ -78,7 +78,7 @@ namespace usos_rpc::icalendar {
                 throw Exception(ExceptionType::PARSE_ERROR, "Could not parse event timestamp!");
             }
 
-            auto description_parts = split(description, "\\n");
+            auto description_parts = split(description, "\n");
             if (description_parts.size() == 3) {
                 auto room_split = split(description_parts[0], ": ");
                 auto room = room_split.size() == 2 ? room_split[1] : description_parts[0];

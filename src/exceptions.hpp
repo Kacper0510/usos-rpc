@@ -42,9 +42,13 @@ namespace usos_rpc {
         ExceptionType _type;
 
     public:
-        Exception(ExceptionType type, const char* message): _message(message), _type(type) {}
+        Exception(ExceptionType type, const char* message): _message(message), _type(type) {
+            log();
+        }
 
-        Exception(ExceptionType type, const std::string& message): _message(message), _type(type) {}
+        Exception(ExceptionType type, const std::string& message): _message(message), _type(type) {
+            log();
+        }
 
         /// @brief Constructor based on fmt::format.
         /// @tparam ...T types to interpolate
@@ -54,6 +58,7 @@ namespace usos_rpc {
         template <typename... T>
         Exception(ExceptionType type, fmt::format_string<T...> fmt_str, T&&... args): _type(type) {
             _message = fmt::vformat(fmt_str, fmt::make_format_args(args...));
+            log();
         }
 
         const char* what() const noexcept override {

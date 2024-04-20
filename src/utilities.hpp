@@ -32,4 +32,20 @@ namespace usos_rpc {
         result.push_back(input.substr(start, end));
         return result;
     }
+
+    /// @brief Removes whitespace from the beginning and the end of a string.
+    /// @param input string to process
+    /// @return stripped/trimmed string
+    [[nodiscard]]
+    std::string strip(const std::string& input) {
+        std::size_t start = 0;
+        std::size_t end = input.size();
+        while (start < end && std::isspace(input[start])) {
+            start++;
+        }
+        while (end > start && std::isspace(input[end - 1])) {
+            end--;
+        }
+        return input.substr(start, end - start);
+    }
 }

@@ -1,10 +1,13 @@
 #pragma once
 
-#include <chrono>
 #include <string>
 #include <vector>
 
 #include "event.hpp"
+
+#include "date/date.h"
+#include "date/tz.h"
+#include "fmt/format.h"
 
 namespace usos_rpc::icalendar {
 
@@ -15,7 +18,7 @@ namespace usos_rpc::icalendar {
         /// @brief Product identifier of the software that generated this calendar file.
         std::string _product_id;
         /// @brief Calendar time zone, applied to all event timestamps.
-        const std::chrono::time_zone* _time_zone;
+        const date::time_zone* _time_zone;
         /// @brief List of events.
         std::vector<Event> _events;
 
@@ -34,7 +37,7 @@ namespace usos_rpc::icalendar {
         _name(calname),
         _product_id(prodid),
         _events(events) {
-            _time_zone = std::chrono::locate_zone(timezone);
+            _time_zone = date::locate_zone(timezone);
         }
 
         /// @brief Returns the calendar name.
@@ -54,7 +57,7 @@ namespace usos_rpc::icalendar {
         /// @brief Returns the calendar time zone.
         /// @return time zone
         [[nodiscard]]
-        const std::chrono::time_zone* time_zone() const {
+        const date::time_zone* time_zone() const {
             return _time_zone;
         }
 
@@ -63,6 +66,19 @@ namespace usos_rpc::icalendar {
         [[nodiscard]]
         const std::vector<Event>& events() const {
             return _events;
+        }
+
+        /// @brief Calendar formatting support for fmt.
+        /// @param event event to format
+        /// @return formatted string
+        friend auto format_as(const Calendar& event) {
+            return fmt::format(
+                "{}\nProduct ID: {}\nTime zone: {}\nEvents:\n\n{}",
+                event._name,
+                event._product_id,
+                event._time_zone->name(),
+                fmt::join(event._events, "\n")
+            );
         }
     };
 }

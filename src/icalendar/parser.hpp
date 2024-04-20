@@ -11,6 +11,7 @@
 #include "event.hpp"
 
 namespace {
+
     /// @brief Splits the iCalendar text into singular lines/properties.
     /// @param text text of an iCalendar file
     /// @return preprocessed vector of properties
@@ -79,9 +80,11 @@ namespace {
     std::string get_property(const std::vector<std::string>& lines, const std::string& name) {
         return get_property(lines.begin(), lines.end(), name);
     }
+
 }
 
 namespace usos_rpc::icalendar {
+
     /// @brief Parses given text into a Calendar object.
     /// @param text text of an iCalendar file
     /// @return parsed calendar data
@@ -132,4 +135,5 @@ namespace usos_rpc::icalendar {
         auto timezone = get_property(lines, "X-WR-TIMEZONE");
         return Calendar(calname, prodid, timezone, events);
     }
+
 }

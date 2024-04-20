@@ -67,6 +67,13 @@ namespace usos_rpc {
 
         virtual ~Exception() {}
 
+        /// @brief Exception formatting support for fmt.
+        /// @param type exception type
+        /// @return formatted string
+        friend auto format_as(const Exception& e) {
+            return fmt::format("{}: {}", e._type, e._message);
+        }
+
     private:
         /// @brief Logs current exception to stderr.
         void log() {

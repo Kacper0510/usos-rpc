@@ -1,12 +1,15 @@
 #pragma once
 
-#include <chrono>
 #include <optional>
 #include <string>
 #include <tuple>
 
 #include "../exceptions.hpp"
 #include "utilities.hpp"
+
+#include "date/date.h"
+#include "date/tz.h"
+#include "fmt/format.h"
 
 namespace usos_rpc::icalendar {
 
@@ -29,9 +32,9 @@ namespace usos_rpc::icalendar {
         } _location;
 
         /// @brief Date and time of the beginning of the event.
-        std::chrono::local_seconds _start;
+        date::local_seconds _start;
         /// @brief Date and time of the end of the event.
-        std::chrono::local_seconds _end;
+        date::local_seconds _end;
 
     public:
         Event() = delete;
@@ -70,10 +73,10 @@ namespace usos_rpc::icalendar {
             try {
                 std::istringstream start_stream(dtstart);
                 start_stream.exceptions(std::ios_base::badbit);
-                start_stream >> std::chrono::parse("%Y%m%dT%H%M%S", _start);
+                start_stream >> date::parse("%Y%m%dT%H%M%S", _start);
                 std::istringstream end_stream(dtend);
                 end_stream.exceptions(std::ios_base::badbit);
-                end_stream >> std::chrono::parse("%Y%m%dT%H%M%S", _end);
+                end_stream >> date::parse("%Y%m%dT%H%M%S", _end);
             } catch (const std::ios_base::failure& err) {
                 throw Exception(ExceptionType::PARSE_ERROR, "Could not parse event timestamp!");
             }
@@ -121,26 +124,26 @@ namespace usos_rpc::icalendar {
 
         /// @brief Returns date and time of the beginning of the event.
         [[nodiscard]]
-        const std::chrono::local_seconds& start() const {
+        const date::local_seconds& start() const {
             return _start;
         }
 
         /// @brief Returns date and time of the end of the event.
         [[nodiscard]]
-        const std::chrono::local_seconds& end() const {
+        const date::local_seconds& end() const {
             return _end;
         }
 
         /// @brief Returns date and time of the beginning of the event as a zoned time.
         [[nodiscard]]
-        const std::chrono::zoned_seconds start(const std::chrono::time_zone* tz) const {
-            return std::chrono::zoned_seconds(tz, _start);
+        const date::zoned_seconds start(const date::time_zone* tz) const {
+            return date::zoned_seconds(tz, _start);
         }
 
         /// @brief Returns date and time of the end of the event as a zoned time.
         [[nodiscard]]
-        const std::chrono::zoned_seconds end(const std::chrono::time_zone* tz) const {
-            return std::chrono::zoned_seconds(tz, _end);
+        const date::zoned_seconds end(const date::time_zone* tz) const {
+            return date::zoned_seconds(tz, _end);
         }
 
         /// @brief Compares by unique identifier.
@@ -155,6 +158,30 @@ namespace usos_rpc::icalendar {
         /// @return comparison result
         auto operator<=>(const Event& other) const {
             return std::tie(_start, _end, _uid) <=> std::tie(other._start, other._end, other._uid);
+        }
+
+        /// @brief Event formatting support for fmt.
+        /// @param event event to format
+        /// @return formatted string
+        friend auto format_as(const Event& event) {
+            auto start = date::format("%Y-%m-%d %H:%M", event._start);
+            auto end = date::format("%H:%M", event._end);
+
+            std::string location;
+            if (event._location.room.has_value() && event._location.building.has_value()) {
+                location = fmt::format(
+                    "{} - {}, {}",
+                    event._location.room.value(),
+                    event._location.building.value(),
+                    event._location.address
+                );
+            } else {
+                location = event._location.address;
+            }
+
+            return fmt::format(
+                "{} - {} ({} - {}):\n{}\n", event._subject, event._type.value_or("???"), start, end, location
+            );
         }
     };
 

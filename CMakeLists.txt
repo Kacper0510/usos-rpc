@@ -7,6 +7,8 @@ set(CMAKE_C_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/../bin")
 set(BUILD_SHARED_LIBS OFF)
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+set(CMAKE_SKIP_INSTALL_RULES ON)
 
 # Options
 option(USOS_RPC_STD_ONLY "Disables system specific headers")
@@ -48,6 +50,7 @@ endif()
 include(FetchContent)
 
 ## fmt
+### Text formatting library, implementation of C++23 <format> header.
 set(fmt_version 10.2.1)
 FetchContent_Declare(
   fmt
@@ -59,6 +62,7 @@ target_link_libraries(usos-rpc fmt::fmt)
 message("[usos-rpc] Completed fetching 'fmt'")
 
 ## libcurl
+### HTTP requests library.
 set(curl_version 8_7_1)
 set(BUILD_CURL_EXE OFF)
 set(BUILD_STATIC_LIBS ON)
@@ -76,7 +80,30 @@ FetchContent_Declare(
   curl
   GIT_REPOSITORY "https://github.com/curl/curl.git"
   GIT_TAG "curl-${curl_version}"
+  OVERRIDE_FIND_PACKAGE
 )
 FetchContent_MakeAvailable(curl)
+set(CURL_LIBRARIES libcurl)
 target_link_libraries(usos-rpc libcurl)
 message("[usos-rpc] Completed fetching 'libcurl'")
+
+## date
+### Date and time library, implementation of C++20 <chrono> header.
+set(date_version 3.0.1)
+
+# FIXME: find a better solution so that date does not use curl and 7zip...
+# when reverting, delete all other unnecessary statements
+if(!WIN32)
+  set(USE_SYSTEM_TZ_DB ON)
+endif()
+
+set(BUILD_TZ_LIB ON)
+FetchContent_Declare(
+  date_src
+  GIT_REPOSITORY "https://github.com/HowardHinnant/date.git"
+  GIT_TAG "v${date_version}"
+)
+FetchContent_MakeAvailable(date_src)
+target_link_libraries(usos-rpc date::date)
+target_link_libraries(usos-rpc date::date-tz)
+message("[usos-rpc] Completed fetching 'date'")

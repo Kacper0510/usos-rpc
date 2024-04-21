@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <regex>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -99,7 +100,7 @@ namespace usos_rpc::icalendar {
         }
 
         bool event_fail = false;
-        std::vector<Event> events;
+        std::set<Event> events;
         auto iter = lines.begin() + 1;
         while (iter != lines.end() - 1) {
             if (iter->starts_with("BEGIN:VEVENT")) {
@@ -116,7 +117,7 @@ namespace usos_rpc::icalendar {
                         get_property(iter, end, "DESCRIPTION"),
                         get_property(iter, end, "LOCATION")
                     );
-                    events.push_back(event);
+                    events.insert(event);
                 } catch (const Exception& err) {
                     event_fail = true;
                 }

@@ -28,7 +28,7 @@ int main() {
         auto calendar = usos_rpc::icalendar::parse(ics_file);
         fmt::println("Calendar:\n\n{}", calendar);
     } catch (const usos_rpc::Exception& e) {
-        fmt::print(stderr, "Error: {}", e);
+        fmt::print(stderr, "Fatal error - {}", e);
         return 1;
     }
 

@@ -48,6 +48,7 @@ endif()
 
 # Dependencies
 include(FetchContent)
+set(FETCHCONTENT_QUIET FALSE)
 
 ## fmt
 ### Text formatting library, implementation of C++23 <format> header.
@@ -93,7 +94,9 @@ set(date_version 3.0.1)
 
 # FIXME: find a better solution so that date does not use curl and 7zip...
 # when reverting, delete all other unnecessary statements
-if(!WIN32)
+if(WIN32)
+  target_compile_definitions(usos-rpc PRIVATE NOMINMAX)
+else()
   set(USE_SYSTEM_TZ_DB ON)
 endif()
 

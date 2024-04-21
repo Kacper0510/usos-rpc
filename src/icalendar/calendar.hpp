@@ -1,7 +1,7 @@
 #pragma once
 
+#include <set>
 #include <string>
-#include <vector>
 
 #include "event.hpp"
 
@@ -20,10 +20,9 @@ namespace usos_rpc::icalendar {
         /// @brief Calendar time zone, applied to all event timestamps.
         const date::time_zone* _time_zone;
         /// @brief List of events.
-        std::vector<Event> _events;
+        std::set<Event> _events;
 
     public:
-
         Calendar() = delete;
 
         /// @brief Constructor based on VCALENDAR format.
@@ -32,7 +31,7 @@ namespace usos_rpc::icalendar {
             const std::string& calname,
             const std::string& prodid,
             const std::string& timezone,
-            const std::vector<Event>& events
+            const std::set<Event>& events
         ):
         _name(calname),
         _product_id(prodid),
@@ -61,10 +60,10 @@ namespace usos_rpc::icalendar {
             return _time_zone;
         }
 
-        /// @brief Returns the list of events.
+        /// @brief Returns the set of events.
         /// @return list of events
         [[nodiscard]]
-        const std::vector<Event>& events() const {
+        const std::set<Event>& events() const {
             return _events;
         }
 

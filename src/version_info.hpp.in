@@ -4,10 +4,13 @@
 
 namespace usos_rpc {
 
-    /// @brief Contains semantic version number of this library.
+    /// @brief Contains semantic version number of this app.
     constexpr const char* VERSION = "@usos-rpc_VERSION@";
 
+    /// @brief Contains semantic version number of this app with commit hash.
+    constexpr const char* FULL_VERSION = "@usos-rpc_FULL_VERSION@";
+
     /// @brief Contains auto-generated user agent name.
-    constexpr const char* USER_AGENT = "usos-rpc/@usos-rpc_VERSION@ (github.com/Kacper0510/usos-rich-presence)";
+    constexpr const char* USER_AGENT = "usos-rpc/@usos-rpc_FULL_VERSION@ (github.com/Kacper0510/usos-rich-presence)";
 
 }

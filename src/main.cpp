@@ -3,6 +3,7 @@
 #include "exceptions.hpp"
 #include "files.hpp"
 #include "icalendar/parser.hpp"
+#include "preinit.hpp"
 #include "requests.hpp"
 #include "version_info.hpp"
 
@@ -12,6 +13,8 @@
 /// @brief Entry point of the program.
 /// @return process return code
 int main() {
+    usos_rpc::assert_files();
+
     // this function currently only tests some features
 
     fmt::println("USOS Rich Presence v{}", usos_rpc::VERSION);

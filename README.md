@@ -6,19 +6,25 @@ The activity contains information about current classes and/or lectures when lin
 ## Building and running
 
 Dependencies to install before building:
-* [CMake](https://cmake.org/) ≥ 3.27
+* [CMake](https://cmake.org/) ≥ 3.22
 * Preferred build system, e.g. [Ninja](https://ninja-build.org/) or [GNU Make](https://www.gnu.org/software/make/)
+
+First, clone the repository to your hard drive:
+```sh
+$ git clone https://github.com/Kacper0510/usos-rpc
+$ cd usos-rpc
+```
 
 To prepare the build, run the following commands:
 ```sh
-$ mkdir build
-$ cd build
-$ cmake ..
+usos-rpc$ mkdir build
+usos-rpc$ cd build
+usos-rpc/build$ cmake ..
 ```
 
-Then, run your build system, still in the `build` directory, for example:
+Then, run your build system, for example:
 ```sh
-$ ninja
+usos-rpc/build$ ninja usos-rpc
 ```
 
 Finally, run the executable that was generated in the `bin` directory.

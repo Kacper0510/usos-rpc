@@ -94,7 +94,7 @@ namespace usos_rpc {
     /// @return file contents
     /// @throws Exception when reading the file fails
     std::string read_file(const std::string& path) {
-        std::ifstream reader(path);
+        std::ifstream reader(path, std::ios::binary);
         if (!reader) {
             throw Exception(ExceptionType::IO_ERROR, "Cannot read file contents ({})!", path);
         }
@@ -107,4 +107,17 @@ namespace usos_rpc {
         }
     }
 
+    /// @brief Writes file contents.
+    /// @tparam T contents' type
+    /// @param path file path to write
+    /// @param contents contents to write
+    /// @throws Exception when writing the file fails
+    template <typename T>
+    void write_file(const std::string& path, const T& contents) {
+        std::ofstream writer(path, std::ios::binary);
+        if (!writer) {
+            throw Exception(ExceptionType::IO_ERROR, "Cannot write to file ({})!", path);
+        }
+        writer << contents;
+    }
 }

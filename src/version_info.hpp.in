@@ -11,6 +11,6 @@ namespace usos_rpc {
     constexpr const char* FULL_VERSION = "@usos-rpc_FULL_VERSION@";
 
     /// @brief Contains auto-generated user agent name.
-    constexpr const char* USER_AGENT = "usos-rpc/@usos-rpc_FULL_VERSION@ (github.com/Kacper0510/usos-rich-presence)";
+    constexpr const char* USER_AGENT = "usos-rpc/@usos-rpc_FULL_VERSION@ (github.com/Kacper0510/usos-rpc)";
 
 }

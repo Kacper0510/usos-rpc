@@ -14,7 +14,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # 'date' uses old CMake version
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
-set(CMAKE_SKIP_INSTALL_RULES ON)
 
 #[==============================[
   Toggleable options
@@ -130,35 +129,71 @@ FetchContent_Declare(
   curl
   GIT_REPOSITORY "https://github.com/curl/curl.git"
   GIT_TAG "curl-${curl_version}"
-  OVERRIDE_FIND_PACKAGE
 )
 FetchContent_MakeAvailable(curl)
-set(CURL_LIBRARIES libcurl)
 target_link_libraries(usos-rpc libcurl)
 message("[usos-rpc] Completed fetching 'libcurl'")
 
 
 #[===[ date ]===]#
 # Date and time library, implementation of C++20 <chrono> header.
-set(date_version 3.0.1)
+set(date_version 8f8336f42be73f4eefb042c3807a5b4399422fed)
 
-# FIXME: find a better solution so that date does not use curl and 7zip...
-# when reverting, delete all other unnecessary statements
+set(BUILD_TZ_LIB ON)
+
 if(WIN32)
+  set(MANUAL_TZ_DB ON)
   # Fix for MSVC build
   target_compile_definitions(usos-rpc PRIVATE NOMINMAX)
 else()
   set(USE_SYSTEM_TZ_DB ON)
 endif()
 
-set(BUILD_TZ_LIB ON)
-
 FetchContent_Declare(
   date_src
   GIT_REPOSITORY "https://github.com/HowardHinnant/date.git"
-  GIT_TAG "v${date_version}"
+  GIT_TAG "${date_version}"
 )
 FetchContent_MakeAvailable(date_src)
 target_link_libraries(usos-rpc date::date)
 target_link_libraries(usos-rpc date::date-tz)
 message("[usos-rpc] Completed fetching 'date'")
+
+
+#[===[ battery-embed ]===]
+# Embedding files into the executable.
+set(battery_embed_version 1.2.15)
+
+set(B_PRODUCTION_MODE ON)
+
+FetchContent_Declare(
+  battery-embed
+  GIT_REPOSITORY "https://github.com/batterycenter/embed.git"
+  GIT_TAG "v${battery_embed_version}"
+)
+FetchContent_MakeAvailable(battery-embed)
+message("[usos-rpc] Completed fetching 'battery-embed'")
+
+#[==============================[
+  Embedded files
+]==============================]#
+
+# Fixes include path for clang-tidy
+target_include_directories(usos-rpc PRIVATE "${EMBED_BINARY_DIR}/autogen/usos-rpc/include/battery")
+
+# Embed files
+file(GLOB resources RELATIVE "${PROJECT_SOURCE_DIR}/resources" "resources/*")
+string(REPLACE " " ";" resources_list ${resources})
+foreach(resource ${resources_list})
+  b_embed(usos-rpc "resources/${resource}")
+endforeach()
+message("[usos-rpc] Embedded following files: ${resources}")
+
+# Include info about embedded files in preinit_files.hpp.in
+set(usos-rpc_EMBEDDED_FILES "\n")
+foreach(resource ${resources_list})
+  string(APPEND usos-rpc_EMBEDDED_FILES "{\"${resource}\", b::embed<\"resources/${resource}\">().data()},\n")
+endforeach()
+configure_file("src/preinit_files.hpp.in" "preinit_files.hpp")
+target_sources(usos-rpc PRIVATE "${PROJECT_BINARY_DIR}/preinit_files.hpp")
+message("[usos-rpc] Exported preinit_files.hpp")

@@ -7,41 +7,38 @@
 
 #include "exceptions.hpp"
 
-// clang-format off
-#ifndef USOS_RPC_STD_ONLY
+#ifdef _WIN32
+    #include <shlobj.h>
+#else
+    #include <pwd.h>
+    #include <unistd.h>
+#endif
 
-    #ifdef _WIN32
-        #include "shlobj_core.h"
-    #else
-        #include <unistd.h>
-        #include <pwd.h>
-    #endif
+namespace {
 
-    namespace {
-
-        /// @brief Returns system-specific home directory.
-        /// @return %AppData% on Windows, $HOME on Unix
-        [[nodiscard]]
-        std::filesystem::path get_home_directory() {
-            #ifdef _WIN32
-                PWSTR result = nullptr;
-                SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_CREATE, nullptr, &result);
-                std::filesystem::path dir(result);
-                CoTaskMemFree(result);
-                return dir;
-            #else
-                const char* home = std::getenv("HOME");
-                if (home == nullptr) {
-                    home = getpwuid(getuid())->pw_dir;
-                }
-                return std::filesystem::path(home);
-            #endif
-        }
-
+    /// @brief Returns system-specific home directory.
+    /// @return %AppData% on Windows, $HOME on Unix
+    // clang-format off
+    [[nodiscard]]
+    std::filesystem::path get_home_directory() {
+        #ifdef _WIN32
+            PWSTR result = nullptr;
+            SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_CREATE, nullptr, &result);
+            std::filesystem::path dir(result);
+            CoTaskMemFree(result);
+            return dir;
+        #else
+            const char* home = std::getenv("HOME");
+            if (home == nullptr) {
+                home = getpwuid(getuid())->pw_dir;
+            }
+            return std::filesystem::path(home);
+        #endif
     }
 
-#endif
-// clang-format on
+    // clang-format on
+
+}
 
 namespace usos_rpc {
 

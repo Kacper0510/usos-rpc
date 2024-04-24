@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(usos-rpc VERSION 1.0.0)
+project(usos-rpc VERSION 0.1)
 
 #[==============================[
   CMake setup
@@ -16,12 +16,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
 #[==============================[
-  Toggleable options
-]==============================]#
-
-option(USOS_RPC_STD_ONLY "Disables system specific headers")
-
-#[==============================[
   Main executable
 ]==============================]#
 
@@ -32,11 +26,6 @@ target_sources(usos-rpc PRIVATE ${sources})
 
 # No subfolders in bin on MSVC
 set_property(TARGET usos-rpc PROPERTY RUNTIME_OUTPUT_DIRECTORY $<1:${PROJECT_SOURCE_DIR}/bin>)
-
-if(USOS_RPC_STD_ONLY)
-  target_compile_definitions(usos-rpc PRIVATE USOS_RPC_STD_ONLY)
-  message("[usos-rpc] Disabled system specific library calls")
-endif()
 
 #[==============================[
   Version information header

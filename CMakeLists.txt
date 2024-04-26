@@ -21,7 +21,7 @@ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
 add_executable(usos-rpc)
 target_include_directories(usos-rpc PRIVATE "src")
-file(GLOB sources "src/*.cpp" "src/*.hpp")
+file(GLOB_RECURSE sources "src/*.cpp" "src/*.hpp")
 target_sources(usos-rpc PRIVATE ${sources})
 
 # No subfolders in bin on MSVC
@@ -163,6 +163,32 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(battery-embed)
 message("[usos-rpc] Completed fetching 'battery-embed'")
 
+#[===[ tzdata ]===]
+# IANA time zone database, needed for 'date' on Windows.
+if (WIN32)
+  FetchContent_Declare(
+    tzdata
+    URL "https://www.iana.org/time-zones/repository/tzdata-latest.tar.gz"
+    DOWNLOAD_EXTRACT_TIMESTAMP OFF
+  )
+  FetchContent_MakeAvailable(tzdata)
+
+  file(GLOB tzdata_files "${tzdata_SOURCE_DIR}/*")
+  list(FILTER tzdata_files EXCLUDE REGEX "^.+\\/[A-Z]+$")  # All capital letters
+  file(COPY ${tzdata_files} DESTINATION "${PROJECT_SOURCE_DIR}/resources/tzdata"
+    PATTERN "*.awk" EXCLUDE
+    PATTERN "*.html" EXCLUDE
+    PATTERN "Makefile" EXCLUDE
+  )
+  
+  # Windows time zones file must be downloaded separately
+  file(DOWNLOAD
+    "https://raw.githubusercontent.com/unicode-org/cldr/main/common/supplemental/windowsZones.xml"
+    "${PROJECT_SOURCE_DIR}/resources/tzdata/windowsZones.xml"
+  )
+  message("[usos-rpc] Completed fetching 'tzdata'")
+endif()
+
 #[==============================[
   Embedded files
 ]==============================]#
@@ -171,17 +197,23 @@ message("[usos-rpc] Completed fetching 'battery-embed'")
 target_include_directories(usos-rpc PRIVATE "${EMBED_BINARY_DIR}/autogen/usos-rpc/include/battery")
 
 # Embed files
-file(GLOB resources RELATIVE "${PROJECT_SOURCE_DIR}/resources" "resources/*")
-string(REPLACE " " ";" resources_list ${resources})
-foreach(resource ${resources_list})
+file(GLOB_RECURSE resources RELATIVE "${PROJECT_SOURCE_DIR}/resources" "resources/*")
+foreach(resource ${resources})
   b_embed(usos-rpc "resources/${resource}")
 endforeach()
-message("[usos-rpc] Embedded following files: ${resources}")
+string(REPLACE ";" " " resources_str "${resources}")
+message("[usos-rpc] Embedded following files: ${resources_str}")
 
 # Include info about embedded files in preinit_files.hpp.in
 set(usos-rpc_EMBEDDED_FILES "\n")
-foreach(resource ${resources_list})
-  string(APPEND usos-rpc_EMBEDDED_FILES "{\"${resource}\", b::embed<\"resources/${resource}\">().data()},\n")
+foreach(resource ${resources})
+  if(WIN32)
+    # Path separator fix
+    string(REPLACE "/" "\\\\" resource_name ${resource})
+  else()
+    set(resource_name ${resource})
+  endif()
+  string(APPEND usos-rpc_EMBEDDED_FILES "{\"${resource_name}\", b::embed<\"resources/${resource}\">().data()},\n")
 endforeach()
 configure_file("src/preinit_files.hpp.in" "preinit_files.hpp")
 target_sources(usos-rpc PRIVATE "${PROJECT_BINARY_DIR}/preinit_files.hpp")

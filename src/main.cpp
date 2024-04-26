@@ -13,7 +13,7 @@
 /// @brief Entry point of the program.
 /// @return process return code
 int main() {
-    usos_rpc::assert_files();
+    usos_rpc::initialize();
 
     // this function currently only tests some features
 

@@ -18,9 +18,8 @@ namespace {
 
     /// @brief Returns system-specific home directory.
     /// @return %AppData% on Windows, $HOME on Unix
-    // clang-format off
     [[nodiscard]]
-    std::filesystem::path get_home_directory() {
+    std::filesystem::path get_home_directory() {  // clang-format off
         #ifdef _WIN32
             PWSTR result = nullptr;
             SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_CREATE, nullptr, &result);
@@ -34,10 +33,7 @@ namespace {
             }
             return std::filesystem::path(home);
         #endif
-    }
-
-    // clang-format on
-
+    }  // clang-format on
 }
 
 namespace usos_rpc {
@@ -45,9 +41,8 @@ namespace usos_rpc {
     /// @brief Returns config directory path based on the value of environmental variable USOS_RPC_DIR
     /// or user's home directory. The path is cached after the first call.
     /// @return guaranteed-to-be-valid directory path
-    // clang-format off
     [[nodiscard]]
-    const std::filesystem::path* const get_config_directory() {
+    const std::filesystem::path* const get_config_directory() {  // clang-format off
         using namespace std::filesystem;
         static std::unique_ptr<path> cache = nullptr;
         if (cache) {
@@ -82,9 +77,7 @@ namespace usos_rpc {
         // last hope
         cache = std::make_unique<path>(current_path());
         return cache.get();
-    }
-
-    // clang-format on
+    }  // clang-format on
 
     /// @brief Reads file contents.
     /// @param path file path to read

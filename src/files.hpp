@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdio>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <memory>
@@ -34,6 +34,7 @@ namespace {
             return std::filesystem::path(home);
         #endif
     }  // clang-format on
+
 }
 
 namespace usos_rpc {

@@ -9,6 +9,7 @@
 
 #include "curl/curl.h"
 #include "fmt/core.h"
+#include "fmt/color.h"
 
 /// @brief Entry point of the program.
 /// @return process return code
@@ -17,7 +18,7 @@ int main() {
 
     // this function currently only tests some features
 
-    fmt::println("USOS Rich Presence v{}", usos_rpc::VERSION);
+    fmt::print(fmt::fg(fmt::color::red), "USOS Rich Presence v{}\n", usos_rpc::VERSION);
     fmt::println("Curl: {}", curl_version());
     fmt::println("User agent: {}", usos_rpc::USER_AGENT);
 

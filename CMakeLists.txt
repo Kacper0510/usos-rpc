@@ -46,9 +46,9 @@ else()
   set(usos-rpc_FULL_VERSION "${CMAKE_PROJECT_VERSION}+${git_commit_string}")
 endif()
 
-target_include_directories(usos-rpc PRIVATE "${PROJECT_BINARY_DIR}")
-configure_file("src/version_info.hpp.in" "version_info.hpp")
-target_sources(usos-rpc PRIVATE "${PROJECT_BINARY_DIR}/version_info.hpp")
+target_include_directories(usos-rpc PRIVATE "${PROJECT_BINARY_DIR}/generated")
+configure_file("src/version_info.hpp.in" "generated/version_info.hpp")
+target_sources(usos-rpc PRIVATE "${PROJECT_BINARY_DIR}/generated/version_info.hpp")
 message("[usos-rpc] Exported '${usos-rpc_FULL_VERSION}' to version_info.hpp")
 
 #[==============================[
@@ -84,12 +84,13 @@ set(FETCHCONTENT_QUIET FALSE)
 
 #[===[ fmt ]===]#
 # Text formatting library, implementation of C++23 <format> header.
-set(fmt_version 10.2.1)
+set(fmt_version cf1f55f7985c4dd53f32f07a34d8fad5cdb2dc61)
 
 FetchContent_Declare(
   fmt
   GIT_REPOSITORY "https://github.com/fmtlib/fmt.git"
   GIT_TAG "${fmt_version}"
+  SYSTEM
 )
 FetchContent_MakeAvailable(fmt)
 target_link_libraries(usos-rpc fmt::fmt)
@@ -118,6 +119,7 @@ FetchContent_Declare(
   curl
   GIT_REPOSITORY "https://github.com/curl/curl.git"
   GIT_TAG "curl-${curl_version}"
+  SYSTEM
 )
 FetchContent_MakeAvailable(curl)
 target_link_libraries(usos-rpc libcurl)
@@ -142,6 +144,7 @@ FetchContent_Declare(
   date_src
   GIT_REPOSITORY "https://github.com/HowardHinnant/date.git"
   GIT_TAG "${date_version}"
+  SYSTEM
 )
 FetchContent_MakeAvailable(date_src)
 target_link_libraries(usos-rpc date::date)
@@ -215,6 +218,6 @@ foreach(resource ${resources})
   endif()
   string(APPEND usos-rpc_EMBEDDED_FILES "{\"${resource_name}\", b::embed<\"resources/${resource}\">().data()},\n")
 endforeach()
-configure_file("src/preinit_files.hpp.in" "preinit_files.hpp")
-target_sources(usos-rpc PRIVATE "${PROJECT_BINARY_DIR}/preinit_files.hpp")
+configure_file("src/preinit_files.hpp.in" "generated/preinit_files.hpp")
+target_sources(usos-rpc PRIVATE "${PROJECT_BINARY_DIR}/generated/preinit_files.hpp")
 message("[usos-rpc] Exported preinit_files.hpp")

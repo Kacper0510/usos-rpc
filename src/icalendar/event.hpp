@@ -9,6 +9,7 @@
 
 #include "date/date.h"
 #include "date/tz.h"
+#include "fmt/color.h"
 #include "fmt/format.h"
 
 namespace usos_rpc::icalendar {
@@ -180,7 +181,12 @@ namespace usos_rpc::icalendar {
             }
 
             return fmt::format(
-                "{} - {} ({} - {}):\n{}\n", event._subject, event._type.value_or("???"), start, end, location
+                "{} - {} ({} - {}):\n{}\n",
+                fmt::styled(event._subject, fmt::fg(fmt::terminal_color::green)),
+                event._type.value_or("???"),
+                start,
+                end,
+                location
             );
         }
     };

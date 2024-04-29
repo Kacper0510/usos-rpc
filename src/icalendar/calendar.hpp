@@ -7,7 +7,9 @@
 
 #include "date/date.h"
 #include "date/tz.h"
+#include "fmt/color.h"
 #include "fmt/format.h"
+#include "fmt/xchar.h"
 
 namespace usos_rpc::icalendar {
 
@@ -73,7 +75,7 @@ namespace usos_rpc::icalendar {
         friend auto format_as(const Calendar& event) {
             return fmt::format(
                 "{}\nProduct ID: {}\nTime zone: {}\nEvents:\n\n{}",
-                event._name,
+                fmt::styled(event._name, fmt::fg(fmt::terminal_color::blue)),
                 event._product_id,
                 event._time_zone->name(),
                 fmt::join(event._events, "\n")

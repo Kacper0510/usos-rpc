@@ -41,7 +41,7 @@ namespace usos_rpc {
                     return;
                 }
 
-                if (::usos_rpc::should_show_colored_output()) {
+                if (should_show_colored_output()) {
                     _instance.enable_colors();
                 }
                 _instance.enable_unicode();
@@ -52,13 +52,13 @@ namespace usos_rpc {
             WindowsConsole() {}
 
             WindowsConsole(const WindowsConsole&) = delete;
-            void operator=(const WindowsConsole&) = delete;
+            WindowsConsole& operator=(const WindowsConsole&) = delete;
 
             /// @brief Disables all features.
             ~WindowsConsole() {
                 if (_enabled) {
                     disable_unicode();
-                    if (::usos_rpc::should_show_colored_output()) {
+                    if (should_show_colored_output()) {
                         disable_colors();
                     }
                 }

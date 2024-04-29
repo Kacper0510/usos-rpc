@@ -3,7 +3,7 @@
 # (c) 2024 Kacper0510 <wkacper@spoko.pl>
 
 AlignAfterOpenBracket: BlockIndent
-AlignArrayOfStructures: Right
+AlignArrayOfStructures: None
 AlignConsecutiveAssignments:
   Enabled: false
 AlignConsecutiveBitFields:
@@ -118,3 +118,4 @@ TabWidth: 4
 VerilogBreakBetweenInstancePorts: true
 ConstructorInitializerIndentWidth: 0
 PenaltyReturnTypeOnItsOwnLine: 500
+PenaltyIndentedWhitespace: 10

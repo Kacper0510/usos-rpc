@@ -3,7 +3,7 @@
 #include <exception>
 #include <string>
 
-#include "fmt/format.h"
+#include "logging.hpp"
 
 namespace usos_rpc {
     /// @brief Represents the type of an exception.
@@ -19,7 +19,7 @@ namespace usos_rpc {
     /// @brief Exception type formatting function for fmt.
     /// @param type exception type
     /// @return formatted string
-    auto format_as(const ExceptionType& type) {
+    inline auto format_as(const ExceptionType& type) {
         using enum ExceptionType;
         switch (type) {
             case IO_ERROR:
@@ -41,13 +41,16 @@ namespace usos_rpc {
         /// @brief Contains type of the exception.
         ExceptionType _type;
 
+        /// @brief How exception warnings should be formatted.
+        constexpr static fmt::text_style WARNING_STYLE = fmt::fg(fmt::terminal_color::yellow);
+
     public:
         Exception(ExceptionType type, const char* message): _message(message), _type(type) {
-            log();
+            eprint(WARNING_STYLE, "Warning - {}: {}\n", _type, _message);
         }
 
         Exception(ExceptionType type, const std::string& message): _message(message), _type(type) {
-            log();
+            eprint(WARNING_STYLE, "Warning - {}: {}\n", _type, _message);
         }
 
         /// @brief Constructor based on fmt::format.
@@ -58,7 +61,7 @@ namespace usos_rpc {
         template <typename... T>
         Exception(ExceptionType type, fmt::format_string<T...> fmt_str, T&&... args): _type(type) {
             _message = fmt::vformat(fmt_str, fmt::make_format_args(args...));
-            log();
+            eprint(WARNING_STYLE, "Warning - {}: {}\n", _type, _message);
         }
 
         const char* what() const noexcept override {
@@ -72,12 +75,6 @@ namespace usos_rpc {
         /// @return formatted string
         friend auto format_as(const Exception& e) {
             return fmt::format("{}: {}", e._type, e._message);
-        }
-
-    private:
-        /// @brief Logs current exception to stderr.
-        void log() {
-            fmt::println("Warning - {}: {}", _type, _message);
         }
     };
 }

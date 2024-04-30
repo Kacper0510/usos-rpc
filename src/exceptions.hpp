@@ -9,11 +9,13 @@ namespace usos_rpc {
     /// @brief Represents the type of an exception.
     enum class ExceptionType {
         /// @brief Indicates filesystem error.
-        IO_ERROR,
+        IO,
         /// @brief Indicates libcurl/networking error.
-        CURL_ERROR,
-        /// @brief Indicates parsing error.
-        PARSE_ERROR,
+        CURL,
+        /// @brief Indicates iCalendar parsing error.
+        ICALENDAR,
+        /// @brief Indicates command line argument parser error.
+        ARGUMENTS,
     };
 
     /// @brief Exception type formatting function for fmt.
@@ -22,12 +24,14 @@ namespace usos_rpc {
     inline auto format_as(const ExceptionType& type) {
         using enum ExceptionType;
         switch (type) {
-            case IO_ERROR:
-                return "filesystem error";
-            case CURL_ERROR:
-                return "networking error";
-            case PARSE_ERROR:
-                return "parsing error";
+            case IO:
+                return "filesystem";
+            case CURL:
+                return "networking";
+            case ICALENDAR:
+                return "iCalendar parsing";
+            case ARGUMENTS:
+                return "wrong arguments";
             default:
                 return "unknown error";
         }

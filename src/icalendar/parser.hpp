@@ -67,7 +67,7 @@ namespace {
             return line.starts_with(name);
         });
         if (iter == end) {
-            throw usos_rpc::Exception(usos_rpc::ExceptionType::PARSE_ERROR, "Missing property: {}", name);
+            throw usos_rpc::Exception(usos_rpc::ExceptionType::ICALENDAR, "Missing property: {}", name);
         }
         return iter->substr(name.size() + 1);
     }
@@ -96,7 +96,7 @@ namespace usos_rpc::icalendar {
         fix_escapes(lines);
         if (lines.empty() || !lines.front().starts_with("BEGIN:VCALENDAR")
             || !lines.back().starts_with("END:VCALENDAR")) {
-            throw Exception(ExceptionType::PARSE_ERROR, "Invalid iCalendar file!");
+            throw Exception(ExceptionType::ICALENDAR, "Invalid iCalendar file!");
         }
 
         bool event_fail = false;
@@ -128,7 +128,7 @@ namespace usos_rpc::icalendar {
             }
         }
         if (event_fail && events.empty()) {
-            throw Exception(ExceptionType::PARSE_ERROR, "Could not parse events!");
+            throw Exception(ExceptionType::ICALENDAR, "Could not parse events!");
         }
 
         auto prodid = get_property(lines, "PRODID");

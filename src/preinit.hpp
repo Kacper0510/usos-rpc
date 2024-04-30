@@ -19,7 +19,7 @@ namespace usos_rpc {
     // clang-format off
     #ifdef _WIN32
     
-        /// @brief Windows console encoding and ASCII codes setup class.
+        /// @brief Windows console encoding and ASCII codes setup class. No-op on other platforms.
         class WindowsConsole {
             /// @brief Contains previous standard output console mode.
             DWORD _console_mode_stdout = 0;
@@ -99,6 +99,15 @@ namespace usos_rpc {
         // static variable initialization
         WindowsConsole WindowsConsole::_instance {};
     
+    #else
+        
+        /// @brief Windows console encoding and ASCII codes setup class. No-op on other platforms.
+        class WindowsConsole {
+        public:
+            /// @brief Enables all features.
+            static void enable_features() {}
+        }
+
     #endif
     // clang-format on
 
@@ -115,22 +124,23 @@ namespace usos_rpc {
         }
     }
 
-    /// @brief Initializes config directory.
+    /// @brief Initializes config directory and logging.
     /// On Windows also initializes 'date' library and sets up console.
     /// @throws Exception when file operations fail.
     void initialize() {  // clang-format off
         try {
             assert_files();
         } catch (const std::filesystem::filesystem_error& err) {
-            throw Exception(ExceptionType::IO_ERROR, err.code().message());
+            throw Exception(ExceptionType::IO, err.code().message());
         }
 
         #ifdef _WIN32
             auto tzdata_path = *get_config_directory() / "tzdata";
             date::set_install(tzdata_path.string());
-
-            WindowsConsole::enable_features();
         #endif
+
+        WindowsConsole::enable_features();
+        initialize_logging();
     }  // clang-format on
 
 }

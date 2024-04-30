@@ -87,14 +87,14 @@ namespace usos_rpc {
     std::string read_file(const std::string& path) {
         std::ifstream reader(path, std::ios::binary);
         if (!reader) {
-            throw Exception(ExceptionType::IO_ERROR, "Cannot read file contents ({})!", path);
+            throw Exception(ExceptionType::IO, "Cannot read file contents ({})!", path);
         }
         reader.exceptions(std::ios_base::badbit);
 
         try {
             return std::string(std::istreambuf_iterator<char>(reader), std::istreambuf_iterator<char>());
         } catch (const std::ios_base::failure& err) {
-            throw Exception(ExceptionType::IO_ERROR, "Cannot read file contents ({})!", path);
+            throw Exception(ExceptionType::IO, "Cannot read file contents ({})!", path);
         }
     }
 
@@ -107,7 +107,7 @@ namespace usos_rpc {
     void write_file(const std::string& path, const T& contents) {
         std::ofstream writer(path, std::ios::binary);
         if (!writer) {
-            throw Exception(ExceptionType::IO_ERROR, "Cannot write to file ({})!", path);
+            throw Exception(ExceptionType::IO, "Cannot write to file ({})!", path);
         }
         writer << contents;
     }

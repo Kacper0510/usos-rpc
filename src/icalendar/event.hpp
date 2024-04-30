@@ -79,7 +79,7 @@ namespace usos_rpc::icalendar {
                 end_stream.exceptions(std::ios_base::badbit);
                 end_stream >> date::parse("%Y%m%dT%H%M%S", _end);
             } catch (const std::ios_base::failure& err) {
-                throw Exception(ExceptionType::PARSE_ERROR, "Could not parse event timestamp!");
+                throw Exception(ExceptionType::ICALENDAR, "Could not parse event timestamp!");
             }
 
             auto description_parts = split(description, "\n");

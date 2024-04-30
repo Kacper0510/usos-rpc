@@ -1,8 +1,8 @@
-#include <algorithm>
 #include <string>
-#include <vector>
 
 #include "build_info.hpp"
+#include "commands/info.hpp"
+#include "commands/parser.hpp"
 #include "exceptions.hpp"
 #include "files.hpp"
 #include "icalendar/parser.hpp"
@@ -15,17 +15,20 @@
 /// @param argc number of command line arguments
 /// @param argv command line arguments
 /// @return process return code
-int main(int argc, char* argv[]) {
+int main(const int argc, const char* argv[]) {
     using namespace usos_rpc;
 
-    std::vector<std::string> args(argv + 1, argv + argc);
-    std::reverse(args.begin(), args.end());
+    auto args = commands::create_arguments_vector(argc, argv);
 
-    if (contains(args, "--version") || contains(args, "-v")) {
-        print("USOS Discord Rich Presence {}\n{}\nhttps://{}\n\nDependencies:\n", FULL_VERSION, COPYRIGHT, GITHUB_URL);
-        std::for_each(DEPENDENCIES.begin(), DEPENDENCIES.end(), [](const auto& dep) {
-            print(" - {}\n", dep);
-        });
+    if (commands::check_command(args, "version")) {
+        commands::version();
+        return 0;
+    } else if (commands::check_command(args, "config")) {
+        commands::config();
+        return 0;
+    } else if (commands::check_command(args, "help", "?")) {
+        WindowsConsole::enable_features();
+        commands::help();
         return 0;
     }
 

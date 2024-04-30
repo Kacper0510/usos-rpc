@@ -34,7 +34,7 @@ void usos_rpc::initialize_logging() {
     auto path = *get_config_directory() / "service.log";
     auto stream = std::ofstream(path, std::ios::binary);
     if (!stream) {
-        throw Exception(ExceptionType::IO_ERROR, "Failed to initialize log file ({})!", path.string());
+        throw Exception(ExceptionType::IO, "Failed to initialize log file ({})!", path.string());
     }
     log_file = std::make_unique<std::ofstream>(std::move(stream));
 }

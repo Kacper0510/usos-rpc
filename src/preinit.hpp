@@ -1,3 +1,6 @@
+/// @file
+/// @brief Pre-initialization functions for config directory and Windows console.
+
 #pragma once
 
 #include <filesystem>
@@ -106,7 +109,7 @@ namespace usos_rpc {
         public:
             /// @brief Enables all features.
             static void enable_features() {}
-        }
+        };
 
     #endif
     // clang-format on
@@ -126,7 +129,7 @@ namespace usos_rpc {
 
     /// @brief Initializes config directory and logging.
     /// On Windows also initializes 'date' library and sets up console.
-    /// @throws Exception when file operations fail.
+    /// @throws usos_rpc::Exception when file operations fail.
     void initialize() {  // clang-format off
         try {
             assert_files();

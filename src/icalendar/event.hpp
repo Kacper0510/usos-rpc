@@ -1,3 +1,6 @@
+/// @file
+/// @brief iCalendar event representation.
+
 #pragma once
 
 #include <optional>
@@ -47,7 +50,7 @@ namespace usos_rpc::icalendar {
         /// @param uid identifier
         /// @param description contains partial location and URL
         /// @param location address
-        /// @throws Exception when timestamp parsing fails
+        /// @throws usos_rpc::Exception when timestamp parsing fails
         Event(
             const std::string& summary,
             const std::string& dtstart,

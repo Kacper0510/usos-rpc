@@ -1,3 +1,6 @@
+/// @file
+/// @brief CMake build info template for automatic variable data insertion.
+
 #pragma once
 
 #include <array>
@@ -8,8 +11,6 @@
 
 #include "battery/embed.hpp"
 #include "curl/curl.h"
-
-// This file contains auto-generated CMake build info template.
 
 namespace usos_rpc {
 

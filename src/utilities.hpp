@@ -1,3 +1,6 @@
+/// @file
+/// @brief Utility functions as an extension for standard library.
+
 #pragma once
 
 #include <algorithm>
@@ -9,10 +12,10 @@ namespace usos_rpc {
 
     /// @brief calculates C-string's length at compile time
     /// @tparam N length that will be returned
-    /// @param string
+    /// @param str the C-string
     /// @return N - 1
     template <std::size_t N>
-    constexpr std::size_t const_string_length(const char (&)[N]) {
+    constexpr std::size_t const_string_length(const char (&str)[N]) {
         return N - 1;
     }
 
@@ -63,7 +66,7 @@ namespace usos_rpc {
     }
 
     /// @brief Creates a standard library array from a list of values without specifying size.
-    /// Copied from https://gist.github.com/klmr/2775736.
+    /// @see https://gist.github.com/klmr/2775736
     /// @tparam ...T types of values
     /// @param ...values values to put in the array
     /// @return std::array of values

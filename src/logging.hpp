@@ -1,3 +1,6 @@
+/// @file
+/// @brief Functions for logging and colored output.
+
 #pragma once
 
 #include <fstream>
@@ -17,7 +20,7 @@ namespace usos_rpc {
     bool should_show_colored_output();
 
     /// @brief Initializes log file (service.log).
-    /// @throws Exception when file stream creation fails
+    /// @throws usos_rpc::Exception when file stream creation fails
     void initialize_logging();
 
     /// @brief Prints string to the selected stream and optionally writes it to the log file.

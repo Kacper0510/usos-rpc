@@ -1,3 +1,6 @@
+/// @file
+/// @brief Informational commands' definitions.
+
 #pragma once
 
 #include <algorithm>

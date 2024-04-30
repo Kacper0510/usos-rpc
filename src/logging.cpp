@@ -1,3 +1,6 @@
+/// @file
+/// @brief Implementation of logging functions.
+
 #include "logging.hpp"
 
 #include <cstdlib>

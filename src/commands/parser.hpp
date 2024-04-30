@@ -1,3 +1,6 @@
+/// @file
+/// @brief Command line arguments parsing helper.
+
 #pragma once
 
 #include <algorithm>

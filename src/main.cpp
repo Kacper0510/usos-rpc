@@ -1,3 +1,6 @@
+/// @file
+/// @brief Entry point of the program.
+
 #include <string>
 
 #include "build_info.hpp"

@@ -1,3 +1,6 @@
+/// @file
+/// @brief Functions for file operations and config directory paths.
+
 #pragma once
 
 #include <cstdlib>
@@ -83,7 +86,7 @@ namespace usos_rpc {
     /// @brief Reads file contents.
     /// @param path file path to read
     /// @return file contents
-    /// @throws Exception when reading the file fails
+    /// @throws usos_rpc::Exception when reading the file fails
     std::string read_file(const std::string& path) {
         std::ifstream reader(path, std::ios::binary);
         if (!reader) {
@@ -102,7 +105,7 @@ namespace usos_rpc {
     /// @tparam T contents' type
     /// @param path file path to write
     /// @param contents contents to write
-    /// @throws Exception when writing the file fails
+    /// @throws usos_rpc::Exception when writing the file fails
     template <typename T>
     void write_file(const std::string& path, const T& contents) {
         std::ofstream writer(path, std::ios::binary);

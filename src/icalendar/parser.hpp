@@ -1,3 +1,6 @@
+/// @file
+/// @brief iCalendar format parser.
+
 #pragma once
 
 #include <algorithm>
@@ -60,7 +63,7 @@ namespace {
     /// @param end end of the line range
     /// @param name property name
     /// @return property value
-    /// @throws Exception when the property is missing
+    /// @throws usos_rpc::Exception when the property is missing
     [[nodiscard]]
     std::string get_property(const lines_iterator& begin, const lines_iterator& end, const std::string& name) {
         auto iter = std::find_if(begin, end, [&name](const std::string& line) {
@@ -76,7 +79,7 @@ namespace {
     /// @param lines vector of properties
     /// @param name property name
     /// @return property value
-    /// @throws Exception when the property is missing
+    /// @throws usos_rpc::Exception when the property is missing
     [[nodiscard]]
     std::string get_property(const std::vector<std::string>& lines, const std::string& name) {
         return get_property(lines.begin(), lines.end(), name);
@@ -89,7 +92,7 @@ namespace usos_rpc::icalendar {
     /// @brief Parses given text into a Calendar object.
     /// @param text text of an iCalendar file
     /// @return parsed calendar data
-    /// @throws Exception when parsing fails
+    /// @throws usos_rpc::Exception when parsing fails
     [[nodiscard]]
     Calendar parse(std::string text) {
         auto lines = preprocess(text);

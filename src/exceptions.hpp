@@ -1,3 +1,6 @@
+/// @file
+/// @brief Exception handling for usos-rpc.
+
 #pragma once
 
 #include <exception>
@@ -49,10 +52,16 @@ namespace usos_rpc {
         constexpr static fmt::text_style WARNING_STYLE = fmt::fg(fmt::terminal_color::yellow);
 
     public:
+        /// @brief Constructor from a C-string.
+        /// @param type exception type
+        /// @param message exception message
         Exception(ExceptionType type, const char* message): _message(message), _type(type) {
             eprint(WARNING_STYLE, "Warning - {}: {}\n", _type, _message);
         }
 
+        /// @brief Constructor from an std::string.
+        /// @param type exception type
+        /// @param message exception message
         Exception(ExceptionType type, const std::string& message): _message(message), _type(type) {
             eprint(WARNING_STYLE, "Warning - {}: {}\n", _type, _message);
         }
@@ -68,6 +77,8 @@ namespace usos_rpc {
             eprint(WARNING_STYLE, "Warning - {}: {}\n", _type, _message);
         }
 
+        /// @brief Returns the exception message.
+        /// @return exception message
         const char* what() const noexcept override {
             return _message.c_str();
         }
@@ -75,7 +86,7 @@ namespace usos_rpc {
         virtual ~Exception() {}
 
         /// @brief Exception formatting support for fmt.
-        /// @param type exception type
+        /// @param e the exception to format
         /// @return formatted string
         friend auto format_as(const Exception& e) {
             return fmt::format("{}: {}", e._type, e._message);

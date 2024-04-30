@@ -1,3 +1,6 @@
+/// @file
+/// @brief iCalendar file structure representation.
+
 #pragma once
 
 #include <set>

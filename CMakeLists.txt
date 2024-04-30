@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 3.22)
-project(usos-rpc VERSION 0.1)
+project(usos-rpc VERSION 0.2.0 HOMEPAGE_URL "github.com/Kacper0510/usos-rpc")
+set(usos-rpc_COPYRIGHT "(c) 2024 Kacper Wojciuch <wkacper@spoko.pl>")
+message("[usos-rpc] Starting CMake configuration")
 
 #[==============================[
   CMake setup
 ]==============================]#
 
 set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD 23)
 set(BUILD_SHARED_LIBS OFF)
 
 # For VS Code
@@ -26,30 +28,6 @@ target_sources(usos-rpc PRIVATE ${sources})
 
 # No subfolders in bin on MSVC
 set_property(TARGET usos-rpc PROPERTY RUNTIME_OUTPUT_DIRECTORY $<1:${PROJECT_SOURCE_DIR}/bin>)
-
-#[==============================[
-  Version information header
-]==============================]#
-
-find_package(Git)
-if(GIT_EXECUTABLE)
-  execute_process(
-    COMMAND ${GIT_EXECUTABLE} describe --always --dirty --exclude '*'
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    OUTPUT_VARIABLE git_commit_string
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-  )
-endif()
-if(git_commit_string STREQUAL "")
-  set(usos-rpc_FULL_VERSION "${CMAKE_PROJECT_VERSION}")
-else()
-  set(usos-rpc_FULL_VERSION "${CMAKE_PROJECT_VERSION}+${git_commit_string}")
-endif()
-
-target_include_directories(usos-rpc PRIVATE "${PROJECT_BINARY_DIR}/generated")
-configure_file("src/version_info.hpp.in" "generated/version_info.hpp")
-target_sources(usos-rpc PRIVATE "${PROJECT_BINARY_DIR}/generated/version_info.hpp")
-message("[usos-rpc] Exported '${usos-rpc_FULL_VERSION}' to version_info.hpp")
 
 #[==============================[
   Additional warnings
@@ -80,6 +58,7 @@ endif()
 
 include(FetchContent)
 set(FETCHCONTENT_QUIET FALSE)
+set(usos-rpc_DEPENDENCIES "\n")
 
 
 #[===[ fmt ]===]#
@@ -89,17 +68,20 @@ set(fmt_version cf1f55f7985c4dd53f32f07a34d8fad5cdb2dc61)
 FetchContent_Declare(
   fmt
   GIT_REPOSITORY "https://github.com/fmtlib/fmt.git"
-  GIT_TAG "${fmt_version}"
+  GIT_TAG ${fmt_version}
   SYSTEM
 )
 FetchContent_MakeAvailable(fmt)
 target_link_libraries(usos-rpc fmt::fmt)
+
+get_directory_property(fmt_version DIRECTORY ${fmt_SOURCE_DIR} DEFINITION FMT_VERSION)  # Real version
+string(APPEND usos-rpc_DEPENDENCIES "\"{fmt} ${fmt_version}\",\n")
 message("[usos-rpc] Completed fetching 'fmt'")
 
 
 #[===[ libcurl ]===]#
 # HTTP requests library.
-set(curl_version 8_7_1)
+set(curl_version curl-8_7_1)
 
 set(BUILD_CURL_EXE OFF)
 set(BUILD_STATIC_LIBS ON)
@@ -118,7 +100,7 @@ endif()
 FetchContent_Declare(
   curl
   GIT_REPOSITORY "https://github.com/curl/curl.git"
-  GIT_TAG "curl-${curl_version}"
+  GIT_TAG ${curl_version}
   SYSTEM
 )
 FetchContent_MakeAvailable(curl)
@@ -149,21 +131,25 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(date_src)
 target_link_libraries(usos-rpc date::date)
 target_link_libraries(usos-rpc date::date-tz)
+
+get_directory_property(date_version DIRECTORY ${date_src_SOURCE_DIR} DEFINITION date_VERSION)  # Real version
+string(APPEND usos-rpc_DEPENDENCIES "\"HowardHinnant/date ${date_version}\",\n")
 message("[usos-rpc] Completed fetching 'date'")
 
 
 #[===[ battery-embed ]===]
 # Embedding files into the executable.
-set(battery_embed_version 1.2.15)
+set(battery_embed_version v1.2.15)
 
 set(B_PRODUCTION_MODE ON)
 
 FetchContent_Declare(
   battery-embed
   GIT_REPOSITORY "https://github.com/batterycenter/embed.git"
-  GIT_TAG "v${battery_embed_version}"
+  GIT_TAG ${battery_embed_version}
 )
 FetchContent_MakeAvailable(battery-embed)
+string(APPEND usos-rpc_DEPENDENCIES "\"battery-embed ${battery_embed_version}\",\n")
 message("[usos-rpc] Completed fetching 'battery-embed'")
 
 #[===[ tzdata ]===]
@@ -207,7 +193,7 @@ endforeach()
 string(REPLACE ";" " " resources_str "${resources}")
 message("[usos-rpc] Embedded following files: ${resources_str}")
 
-# Include info about embedded files in preinit_files.hpp.in
+# Include info about embedded files in build info header
 set(usos-rpc_EMBEDDED_FILES "\n")
 foreach(resource ${resources})
   if(WIN32)
@@ -218,6 +204,27 @@ foreach(resource ${resources})
   endif()
   string(APPEND usos-rpc_EMBEDDED_FILES "{\"${resource_name}\", b::embed<\"resources/${resource}\">().data()},\n")
 endforeach()
-configure_file("src/preinit_files.hpp.in" "generated/preinit_files.hpp")
-target_sources(usos-rpc PRIVATE "${PROJECT_BINARY_DIR}/generated/preinit_files.hpp")
-message("[usos-rpc] Exported preinit_files.hpp")
+
+#[==============================[
+  Build information header
+]==============================]#
+
+find_package(Git)
+if(GIT_EXECUTABLE)
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} describe --always --dirty --exclude '*'
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    OUTPUT_VARIABLE git_commit_string
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+endif()
+if(git_commit_string STREQUAL "")
+  set(usos-rpc_FULL_VERSION "${CMAKE_PROJECT_VERSION}")
+else()
+  set(usos-rpc_FULL_VERSION "${CMAKE_PROJECT_VERSION}+${git_commit_string}")
+endif()
+
+target_include_directories(usos-rpc PRIVATE "${PROJECT_BINARY_DIR}/generated")
+configure_file("src/build_info.hpp.in" "generated/build_info.hpp")
+target_sources(usos-rpc PRIVATE "${PROJECT_BINARY_DIR}/generated/build_info.hpp")
+message("[usos-rpc] Exported '${usos-rpc_FULL_VERSION}' to build_info.hpp")

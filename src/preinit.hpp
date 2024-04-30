@@ -3,10 +3,10 @@
 #include <filesystem>
 #include <memory>
 
+#include "build_info.hpp"
 #include "exceptions.hpp"
 #include "files.hpp"
 #include "logging.hpp"
-#include "preinit_files.hpp"
 
 #include "date/date.h"
 

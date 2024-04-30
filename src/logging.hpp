@@ -13,6 +13,7 @@ namespace usos_rpc {
 
     /// @brief Returns true if the output of this program should be colored.
     /// @return true if NO_COLOR environment variable is not set
+    [[nodiscard]]
     bool should_show_colored_output();
 
     /// @brief Initializes log file (service.log).

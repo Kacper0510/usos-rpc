@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -47,5 +48,29 @@ namespace usos_rpc {
             end--;
         }
         return input.substr(start, end - start);
+    }
+
+    /// @brief Checks if a container contains a value.
+    /// @tparam T container type
+    /// @tparam V value type
+    /// @param container container to check
+    /// @param value value to match
+    /// @return true if the value is in the container
+    template <typename T, typename V>
+    [[nodiscard]]
+    bool contains(const T& container, const V& value) {
+        return std::find(container.begin(), container.end(), value) != container.end();
+    }
+
+    /// @brief Creates a standard library array from a list of values without specifying size.
+    /// Copied from https://gist.github.com/klmr/2775736.
+    /// @tparam ...T types of values
+    /// @param ...values values to put in the array
+    /// @return std::array of values
+    template <typename... T>
+    constexpr std::array<typename std::decay<typename std::common_type<T...>::type>::type, sizeof...(T)> make_array(
+        T&&... values
+    ) {
+        return { std::forward<T>(values)... };
     }
 }

@@ -1,19 +1,35 @@
+#include <algorithm>
 #include <string>
+#include <vector>
 
+#include "build_info.hpp"
 #include "exceptions.hpp"
 #include "files.hpp"
 #include "icalendar/parser.hpp"
 #include "logging.hpp"
 #include "preinit.hpp"
 #include "requests.hpp"
-#include "version_info.hpp"
-
-#include "curl/curl.h"
+#include "utilities.hpp"
 
 /// @brief Entry point of the program.
+/// @param argc number of command line arguments
+/// @param argv command line arguments
 /// @return process return code
-int main() {
-    usos_rpc::initialize();
+int main(int argc, char* argv[]) {
+    using namespace usos_rpc;
+
+    std::vector<std::string> args(argv + 1, argv + argc);
+    std::reverse(args.begin(), args.end());
+
+    if (contains(args, "--version") || contains(args, "-v")) {
+        print("USOS Discord Rich Presence {}\n{}\nhttps://{}\n\nDependencies:\n", FULL_VERSION, COPYRIGHT, GITHUB_URL);
+        std::for_each(DEPENDENCIES.begin(), DEPENDENCIES.end(), [](const auto& dep) {
+            print(" - {}\n", dep);
+        });
+        return 0;
+    }
+
+    initialize();
 
     // this function currently only tests some features
 

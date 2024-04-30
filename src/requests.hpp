@@ -3,10 +3,10 @@
 #include <string>
 #include <string_view>
 
+#include "build_info.hpp"
 #include "exceptions.hpp"
 #include "files.hpp"
 #include "utilities.hpp"
-#include "version_info.hpp"
 
 #include "curl/curl.h"
 

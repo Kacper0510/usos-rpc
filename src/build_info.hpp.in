@@ -1,0 +1,42 @@
+#pragma once
+
+#include <array>
+#include <map>
+#include <string>
+
+#include "utilities.hpp"
+
+#include "battery/embed.hpp"
+#include "curl/curl.h"
+
+// This file contains auto-generated CMake build info template.
+
+namespace usos_rpc {
+
+    /// @brief Contains semantic version number of this app.
+    constexpr const char* VERSION = "@usos-rpc_VERSION@";
+
+    /// @brief Contains semantic version number of this app with commit hash.
+    constexpr const char* FULL_VERSION = "@usos-rpc_FULL_VERSION@";
+
+    /// @brief Contains the URL of the project's homepage - its GitHub repository URL.
+    constexpr const char* GITHUB_URL = "@usos-rpc_HOMEPAGE_URL@";
+
+    /// @brief Contains the copyright info.
+    constexpr const char* COPYRIGHT = "@usos-rpc_COPYRIGHT@";
+
+    /// @brief Contains auto-generated user agent name.
+    constexpr const char* USER_AGENT = "usos-rpc/@usos-rpc_FULL_VERSION@ (@usos-rpc_HOMEPAGE_URL@)";
+
+    /// @brief Contains an array of dependencies and their versions.
+    const auto DEPENDENCIES = make_array<std::string>(
+        // @usos-rpc_DEPENDENCIES@
+        curl_version()
+    );
+
+    /// @brief Contains a map of file names embedded in the source file and their content.
+    const std::map<std::string, const char*> EMBEDDED_FILES {
+        // @usos-rpc_EMBEDDED_FILES@
+    };
+
+}

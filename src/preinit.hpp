@@ -12,6 +12,7 @@
 #include "logging.hpp"
 
 #include "date/date.h"
+#include "date/tz.h"
 
 #ifdef _WIN32
     #include "windows.h"
@@ -128,9 +129,9 @@ namespace usos_rpc {
     }
 
     /// @brief Initializes config directory and logging.
-    /// On Windows also initializes 'date' library and sets up console.
+    /// On Windows also initializes 'date' library.
     /// @throws usos_rpc::Exception when file operations fail.
-    void initialize() {  // clang-format off
+    void initialize_config() {  // clang-format off
         try {
             assert_files();
         } catch (const std::filesystem::filesystem_error& err) {
@@ -142,8 +143,6 @@ namespace usos_rpc {
             date::set_install(tzdata_path.string());
         #endif
 
-        WindowsConsole::enable_features();
         initialize_logging();
     }  // clang-format on
-
 }

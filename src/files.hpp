@@ -46,25 +46,28 @@ namespace usos_rpc {
     /// or user's home directory. The path is cached after the first call.
     /// @return guaranteed-to-be-valid directory path
     [[nodiscard]]
-    const std::filesystem::path* const get_config_directory() {  // clang-format off
+    const std::filesystem::path* const get_config_directory() {
         using namespace std::filesystem;
         static std::unique_ptr<path> cache = nullptr;
         if (cache) {
             return cache.get();
         }
 
-        // environment variable
-        auto env_dir = std::getenv("USOS_RPC_DIR");
-        if (env_dir) {
-            path env_path(env_dir);
-            if (is_directory(env_path)) {
-                cache = std::make_unique<path>(env_path);
-                return cache.get();
+        try {
+            // environment variable
+            auto env_dir = std::getenv("USOS_RPC_DIR");
+            if (env_dir) {
+                path env_path(env_dir);
+                if (!exists(env_path)) {
+                    create_directories(env_path);
+                }
+                if (is_directory(env_path)) {
+                    cache = std::make_unique<path>(env_path);
+                    return cache.get();
+                }
             }
-        }
 
-        // home directory or AppData
-        #ifndef USOS_RPC_STD_ONLY
+            // home directory or AppData
             path home = get_home_directory();
             if (is_directory(home)) {
                 home /= "usos-rpc";
@@ -76,12 +79,14 @@ namespace usos_rpc {
                     return cache.get();
                 }
             }
-        #endif
 
-        // last hope
-        cache = std::make_unique<path>(current_path());
-        return cache.get();
-    }  // clang-format on
+            // last hope
+            cache = std::make_unique<path>(current_path());
+            return cache.get();
+        } catch (const filesystem_error& fs_error) {
+            throw Exception(ExceptionType::IO, fs_error.what());
+        }
+    }
 
     /// @brief Reads file contents.
     /// @param path file path to read

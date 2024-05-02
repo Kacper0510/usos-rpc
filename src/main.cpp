@@ -1,61 +1,62 @@
 /// @file
 /// @brief Entry point of the program.
 
+#include <exception>
 #include <string>
+#include <vector>
 
-#include "build_info.hpp"
+#include "commands/default.hpp"
 #include "commands/info.hpp"
 #include "commands/parser.hpp"
 #include "exceptions.hpp"
-#include "files.hpp"
-#include "icalendar/parser.hpp"
 #include "logging.hpp"
 #include "preinit.hpp"
-#include "requests.hpp"
-#include "utilities.hpp"
+
+/// @brief How exception fatal errors should be formatted.
+constexpr static fmt::text_style ERROR_STYLE = fmt::fg(fmt::terminal_color::red);
+
+/// @brief De facto true main function. Chooses appropriate action based on given command, if any.
+/// @param args reversed command line argument list
+void choose_command(std::vector<std::string>& args) {
+    using namespace usos_rpc;
+
+    if (commands::check_command(args, "version")) {
+        commands::version();
+        return;
+    } else if (commands::check_command(args, "config")) {
+        commands::config();
+        return;
+    } else if (commands::check_command(args, "help", "?")) {
+        commands::help();
+        return;
+    }
+
+    initialize_config();
+
+    if (args.empty()) {
+        throw Exception(ExceptionType::ARGUMENTS, "Not enough arguments!");
+    }
+    commands::run_default(args.back());
+}
 
 /// @brief Entry point of the program.
 /// @param argc number of command line arguments
 /// @param argv command line arguments
 /// @return process return code
 int main(const int argc, const char* argv[]) {
-    using namespace usos_rpc;
-
-    auto args = commands::create_arguments_vector(argc, argv);
-
-    if (commands::check_command(args, "version")) {
-        commands::version();
-        return 0;
-    } else if (commands::check_command(args, "config")) {
-        commands::config();
-        return 0;
-    } else if (commands::check_command(args, "help", "?")) {
-        WindowsConsole::enable_features();
-        commands::help();
-        return 0;
-    }
-
-    initialize();
-
-    // this function currently only tests some features
-
-    usos_rpc::print(fmt::fg(fmt::color::red) | fmt::emphasis::italic, "USOS Rich Presence v{}\n", usos_rpc::VERSION);
-    usos_rpc::print("Curl: {}\n", curl_version());
-    usos_rpc::print("User agent: {}\n", usos_rpc::USER_AGENT);
-
-    auto response = usos_rpc::http_get("https://api.ipify.org/");
-    usos_rpc::print("IP: {}\n", response);
-
-    usos_rpc::print("Home path: {}\n", usos_rpc::get_config_directory()->string());
-
     try {
-        auto ics_file = usos_rpc::read_file("test.ics");
-        auto calendar = usos_rpc::icalendar::parse(ics_file);
-        usos_rpc::print("Calendar:\n\n{}", calendar);
+        usos_rpc::WindowsConsole::enable_features();
+        auto args = usos_rpc::commands::create_arguments_vector(argc, argv);
+        choose_command(args);
     } catch (const usos_rpc::Exception& e) {
-        usos_rpc::eprint(fmt::fg(fmt::terminal_color::red), "Fatal error - {}", e);
+        usos_rpc::eprint(ERROR_STYLE, "Fatal error - {}\n", e);
+        return 1;
+    } catch (const std::exception& e) {
+        usos_rpc::eprint(ERROR_STYLE, "Fatal error: {}\n", e.what());
+        return 1;
+    } catch (...) {
+        usos_rpc::eprint(ERROR_STYLE, "Unknown fatal error!\n");
         return 1;
     }
-
     return 0;
 }

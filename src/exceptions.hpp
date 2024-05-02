@@ -19,6 +19,8 @@ namespace usos_rpc {
         ICALENDAR,
         /// @brief Indicates command line argument parser error.
         ARGUMENTS,
+        /// @brief Indicates Discord RPC exception.
+        DISCORD,
     };
 
     /// @brief Exception type formatting function for fmt.
@@ -35,6 +37,8 @@ namespace usos_rpc {
                 return "iCalendar parsing";
             case ARGUMENTS:
                 return "wrong arguments";
+            case DISCORD:
+                return "Discord error";
             default:
                 return "unknown error";
         }

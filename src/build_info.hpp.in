@@ -4,7 +4,7 @@
 #pragma once
 
 #include <array>
-#include <map>
+#include <unordered_map>
 #include <string>
 
 #include "utilities.hpp"
@@ -36,7 +36,7 @@ namespace usos_rpc {
     );
 
     /// @brief Contains a map of file names embedded in the source file and their content.
-    const std::map<std::string, const char*> EMBEDDED_FILES {
+    const std::unordered_map<std::string, const char*> EMBEDDED_FILES {
         // @usos-rpc_EMBEDDED_FILES@
     };
 

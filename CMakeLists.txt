@@ -17,6 +17,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # 'date' uses old CMake version
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
+# 'DiscordRPC' uses old CMake version
+set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
+
 #[==============================[
   Main executable
 ]==============================]#
@@ -137,7 +140,37 @@ string(APPEND usos-rpc_DEPENDENCIES "\"HowardHinnant/date ${date_version}\",\n")
 message("[usos-rpc] Completed fetching 'date'")
 
 
-#[===[ battery-embed ]===]
+#[===[ DiscordRPC ]===]#
+# Official Discord Rich Presence library (deprecated, but still better than their SDK).
+set(discord_rpc_version 963aa9f3e5ce81a4682c6ca3d136cddda614db33)
+
+set(BUILD_EXAMPLES OFF)
+set(USE_STATIC_CRT ON)
+
+FetchContent_Declare(
+  discord-rpc
+  GIT_REPOSITORY "https://github.com/discord/discord-rpc.git"
+  GIT_TAG ${discord_rpc_version}
+  SYSTEM
+)
+FetchContent_MakeAvailable(discord-rpc)
+target_link_libraries(usos-rpc discord-rpc)
+target_include_directories(usos-rpc PRIVATE "${discord-rpc_SOURCE_DIR}/include")
+
+# Fix .clang-format duplicates
+file(READ "${discord-rpc_SOURCE_DIR}/.clang-format" discord_rpc_clang_format)
+string(REPLACE "\n" ";" discord_rpc_clang_format "${discord_rpc_clang_format}")
+list(REMOVE_DUPLICATES discord_rpc_clang_format)
+list(FILTER discord_rpc_clang_format EXCLUDE REGEX "^Language:.+$")
+string(REPLACE ";" "\n" discord_rpc_clang_format "${discord_rpc_clang_format}")
+file(WRITE "${discord-rpc_SOURCE_DIR}/.clang-format" ${discord_rpc_clang_format})
+
+string(SUBSTRING ${discord_rpc_version} 0 7 discord_rpc_version)  # Shortened git hash
+string(APPEND usos-rpc_DEPENDENCIES "\"DiscordRPC ${discord_rpc_version}\",\n")
+message("[usos-rpc] Completed fetching 'DiscordRPC'")
+
+
+#[===[ battery-embed ]===]#
 # Embedding files into the executable.
 set(battery_embed_version v1.2.15)
 
@@ -152,7 +185,8 @@ FetchContent_MakeAvailable(battery-embed)
 string(APPEND usos-rpc_DEPENDENCIES "\"battery-embed ${battery_embed_version}\",\n")
 message("[usos-rpc] Completed fetching 'battery-embed'")
 
-#[===[ tzdata ]===]
+
+#[===[ tzdata ]===]#
 # IANA time zone database, needed for 'date' on Windows.
 if (WIN32)
   FetchContent_Declare(

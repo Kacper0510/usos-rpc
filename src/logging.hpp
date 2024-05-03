@@ -33,7 +33,7 @@ namespace usos_rpc {
     /// @param fmt_str format string with curly braces
     /// @param ...args arguments to interpolate
     template <typename... T>
-    void print(fmt::format_string<T...> fmt_str, T&&... args) {
+    void lprint(fmt::format_string<T...> fmt_str, T&&... args) {
         auto to_print = fmt::vformat(fmt_str, fmt::make_format_args(args...));
         log(std::cout, to_print);
     }
@@ -44,7 +44,7 @@ namespace usos_rpc {
     /// @param fmt_str format string with curly braces
     /// @param ...args arguments to interpolate
     template <typename... T>
-    void print(const fmt::text_style& ts, fmt::format_string<T...> fmt_str, T&&... args) {
+    void lprint(const fmt::text_style& ts, fmt::format_string<T...> fmt_str, T&&... args) {
         auto to_print = fmt::vformat(ts, fmt_str, fmt::make_format_args(args...));
         log(std::cout, to_print);
     }
@@ -69,4 +69,16 @@ namespace usos_rpc {
         auto to_print = fmt::vformat(ts, fmt_str, fmt::make_format_args(args...));
         log(std::clog, to_print);
     }
+
+    namespace colors {
+        /// @brief Exception warnings formatting style.
+        constexpr fmt::text_style WARNING = fmt::fg(fmt::terminal_color::yellow);
+
+        /// @brief Fatal errors formatting style.
+        constexpr fmt::text_style FATAL_ERROR = fmt::fg(fmt::terminal_color::red);
+
+        /// @brief How messages indicating some kind of a success should be formatted.
+        constexpr fmt::text_style SUCCESS = fmt::fg(fmt::terminal_color::green);
+    }
+
 }

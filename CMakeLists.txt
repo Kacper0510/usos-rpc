@@ -210,6 +210,8 @@ if (WIN32)
     "${PROJECT_SOURCE_DIR}/resources/tzdata/windowsZones.xml"
   )
   message("[usos-rpc] Completed fetching 'tzdata'")
+else()
+  file(REMOVE_RECURSE "${PROJECT_SOURCE_DIR}/resources/tzdata")
 endif()
 
 #[==============================[

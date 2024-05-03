@@ -25,7 +25,7 @@ namespace usos_rpc::icalendar {
         std::string _subject;
         /// @brief Event type abbreviation, meaning for example a lecture or lab classes.
         std::optional<std::string> _type;
-        /// @brief URL pointing at the event in the Web version of USOS.
+        /// @brief URL pointing at the event in the web version of USOS.
         std::optional<std::string> _url;
 
         /// @brief Event location.

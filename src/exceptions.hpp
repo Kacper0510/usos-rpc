@@ -52,22 +52,19 @@ namespace usos_rpc {
         /// @brief Contains type of the exception.
         ExceptionType _type;
 
-        /// @brief How exception warnings should be formatted.
-        constexpr static fmt::text_style WARNING_STYLE = fmt::fg(fmt::terminal_color::yellow);
-
     public:
         /// @brief Constructor from a C-string.
         /// @param type exception type
         /// @param message exception message
         Exception(ExceptionType type, const char* message): _message(message), _type(type) {
-            eprint(WARNING_STYLE, "Warning - {}: {}\n", _type, _message);
+            eprint(colors::WARNING, "Warning - {}: {}\n", _type, _message);
         }
 
         /// @brief Constructor from an std::string.
         /// @param type exception type
         /// @param message exception message
         Exception(ExceptionType type, const std::string& message): _message(message), _type(type) {
-            eprint(WARNING_STYLE, "Warning - {}: {}\n", _type, _message);
+            eprint(colors::WARNING, "Warning - {}: {}\n", _type, _message);
         }
 
         /// @brief Constructor based on fmt::format.
@@ -78,7 +75,7 @@ namespace usos_rpc {
         template <typename... T>
         Exception(ExceptionType type, fmt::format_string<T...> fmt_str, T&&... args): _type(type) {
             _message = fmt::vformat(fmt_str, fmt::make_format_args(args...));
-            eprint(WARNING_STYLE, "Warning - {}: {}\n", _type, _message);
+            eprint(colors::WARNING, "Warning - {}: {}\n", _type, _message);
         }
 
         /// @brief Returns the exception message.

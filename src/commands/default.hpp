@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <csignal>
 #include <cstdlib>
 #include <string>
 
@@ -16,9 +17,7 @@ namespace {
     /// @brief Callback for Discord RPC, invoked when connection to Discord instance is successful.
     /// @param user user logged in the currently running Discord instance
     void handle_discord_ready(const DiscordUser* user) {
-        usos_rpc::print(
-            fmt::fg(fmt::terminal_color::green), "Connected to Discord: {} ({})\n", user->username, user->userId
-        );
+        usos_rpc::lprint(usos_rpc::colors::SUCCESS, "Connected to Discord: {} ({})\n", user->username, user->userId);
     }
 
     /// @brief Callback for Discord RPC, invoked when connection to Discord instance is lost.
@@ -47,12 +46,24 @@ namespace {
         .joinRequest = nullptr,
     };
 
+    /// @brief Detects when Ctrl+C was pressed (SIGINT) or program should terminate (SIGTERM).
+    volatile std::sig_atomic_t ctrl_c_detected = 0;
+
+}
+
+/// @brief Passed to std::signal() as SIGINT and SIGTERM handler.
+/// @param signal ignored
+extern "C" void ctrl_c_signal_handler(int signal) {
+    ctrl_c_detected = 1;
 }
 
 namespace usos_rpc::commands {
 
     void run_default(const std::string& id) {
-        Discord_Initialize(id.c_str(), &handlers, true, nullptr);
+        std::signal(SIGINT, ctrl_c_signal_handler);
+        std::signal(SIGTERM, ctrl_c_signal_handler);
+        Discord_Initialize(id.c_str(), &handlers, false, nullptr);
+
         try {
             DiscordRichPresence presence = {
                 .state = "test",
@@ -73,7 +84,7 @@ namespace usos_rpc::commands {
                 .instance = 0,
             };
             Discord_UpdatePresence(&presence);
-            while (true) {
+            while (!ctrl_c_detected) {
                 Discord_RunCallbacks();
             }
         } catch (...) {
@@ -81,6 +92,7 @@ namespace usos_rpc::commands {
             throw;
         }
         Discord_Shutdown();
+        lprint(colors::SUCCESS, "Rich presence stopped successfully!\n");
     }
 
 }

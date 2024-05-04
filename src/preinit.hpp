@@ -23,7 +23,7 @@ namespace usos_rpc {
     // clang-format off
     #ifdef _WIN32
     
-        /// @brief Windows console encoding and ASCII codes setup class. No-op on other platforms.
+        /// @brief Windows console encoding and ANSI codes setup class. No-op on other platforms.
         class WindowsConsole {
             /// @brief Contains previous standard output console mode.
             DWORD _console_mode_stdout = 0;
@@ -68,7 +68,7 @@ namespace usos_rpc {
                 }
             }
 
-            /// @brief Saves current console mode and enables virtual terminal processing (ASCII color codes).
+            /// @brief Saves current console mode and enables virtual terminal processing (ANSI color codes).
             void enable_colors() {
                 HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
                 GetConsoleMode(out, &_console_mode_stdout);
@@ -105,7 +105,7 @@ namespace usos_rpc {
     
     #else
         
-        /// @brief Windows console encoding and ASCII codes setup class. No-op on other platforms.
+        /// @brief Windows console encoding and ANSI codes setup class. No-op on other platforms.
         class WindowsConsole {
         public:
             /// @brief Enables all features.

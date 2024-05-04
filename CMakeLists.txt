@@ -100,6 +100,15 @@ else()
   set(CURL_USE_OPENSSL ON)
 endif()
 
+set(CURL_DISABLE_BASIC_AUTH ON)
+set(CURL_DISABLE_BEARER_AUTH ON)
+set(CURL_DISABLE_DIGEST_AUTH ON)
+set(CURL_DISABLE_KERBEROS_AUTH ON)
+set(CURL_DISABLE_NEGOTIATE_AUTH ON)
+set(CURL_DISABLE_HTTP_AUTH ON)
+set(CURL_DISABLE_AWS ON)
+set(HTTP_ONLY ON)
+
 FetchContent_Declare(
   curl
   GIT_REPOSITORY "https://github.com/curl/curl.git"
@@ -232,6 +241,9 @@ message("[usos-rpc] Embedded following files: ${resources_str}")
 # Include info about embedded files in build info header
 set(usos-rpc_EMBEDDED_FILES "\n")
 foreach(resource ${resources})
+  if(resource MATCHES ".ansi$")  # Skip automatic unpacking for .ansi files
+    continue()
+  endif()
   if(WIN32)
     # Path separator fix
     string(REPLACE "/" "\\\\" resource_name ${resource})

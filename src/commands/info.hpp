@@ -9,6 +9,8 @@
 #include "../logging.hpp"
 #include "build_info.hpp"
 
+#include "battery/embed.hpp"
+
 namespace usos_rpc::commands {
 
     /// @brief Prints the version of the program.
@@ -21,7 +23,7 @@ namespace usos_rpc::commands {
 
     /// @brief Prints the help message.
     void help() {
-        lprint(fmt::fg(fmt::color::orange), "TODO\n");
+        lprint(fmt::runtime(b::embed<"resources/help.ansi">().data()), fmt::arg("version", VERSION));
     }
 
     /// @brief Prints the auto-selected config directory.

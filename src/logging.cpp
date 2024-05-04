@@ -16,8 +16,8 @@ namespace usos_rpc {
 
 namespace {
 
-    /// @brief Regular expression for stripping ASCII color codes.
-    const std::regex ASCII_COLOR_CODES(R"(\x1b\[[0-9;]*m)");
+    /// @brief Regular expression for stripping ANSI color codes.
+    const std::regex ANSI_COLOR_CODES(R"(\x1b\[[0-9;]*m)");
 
     /// @brief File to log all console output to, or a null pointer.
     std::unique_ptr<std::ofstream> log_file = nullptr;
@@ -43,7 +43,7 @@ void usos_rpc::initialize_logging() {
 }
 
 void usos_rpc::log(std::ostream& stream, const std::string& to_print) {
-    const auto stripped = std::regex_replace(to_print, ASCII_COLOR_CODES, "");
+    const auto stripped = std::regex_replace(to_print, ANSI_COLOR_CODES, "");
 
     if (usos_rpc::should_show_colored_output()) {
         stream << to_print;

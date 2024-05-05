@@ -28,11 +28,11 @@ namespace usos_rpc::icalendar {
         std::set<Event> _events;
 
     public:
-        Calendar() = delete;
+        Calendar() = default;  // To simplify Config class.
 
         /// @brief Constructor based on VCALENDAR format.
         /// @param events list of events
-        explicit Calendar(
+        Calendar(
             const std::string& calname,
             const std::string& prodid,
             const std::string& timezone,

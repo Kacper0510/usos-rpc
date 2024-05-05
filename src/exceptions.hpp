@@ -21,6 +21,8 @@ namespace usos_rpc {
         ARGUMENTS,
         /// @brief Indicates Discord RPC exception.
         DISCORD,
+        /// @brief Indicates configuration file loading error.
+        CONFIG,
     };
 
     /// @brief Exception type formatting function for fmt.
@@ -39,6 +41,8 @@ namespace usos_rpc {
                 return "wrong arguments";
             case DISCORD:
                 return "Discord error";
+            case CONFIG:
+                return "wrong config";
             default:
                 return "unknown error";
         }

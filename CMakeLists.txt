@@ -179,6 +179,23 @@ string(APPEND usos-rpc_DEPENDENCIES "\"DiscordRPC ${discord_rpc_version}\",\n")
 message("[usos-rpc] Completed fetching 'DiscordRPC'")
 
 
+#[===[ tomlplusplus ]===]#
+# TOML config parser and serializer.
+set(tomlplusplus_version v3.4.0)
+
+FetchContent_Declare(
+  tomlplusplus
+  GIT_REPOSITORY "https://github.com/marzer/tomlplusplus.git"
+  GIT_TAG ${tomlplusplus_version}
+  SYSTEM
+)
+FetchContent_MakeAvailable(tomlplusplus)
+target_link_libraries(usos-rpc tomlplusplus::tomlplusplus)
+
+string(APPEND usos-rpc_DEPENDENCIES "\"toml++ ${tomlplusplus_version}\",\n")
+message("[usos-rpc] Completed fetching 'tomlplusplus'")
+
+
 #[===[ battery-embed ]===]#
 # Embedding files into the executable.
 set(battery_embed_version v1.2.15)

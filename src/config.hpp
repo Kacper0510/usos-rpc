@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <regex>
 #include <string>
 
 #include "exceptions.hpp"
@@ -12,6 +13,13 @@
 #include "requests.hpp"
 
 #include "toml++/toml.hpp"
+
+namespace {
+
+    /// @brief Regular expression for a valid Discord identifier (uint64_t).
+    const std::regex DISCORD_ID(R"(\d{1,20})");
+
+}
 
 namespace usos_rpc {
 
@@ -39,7 +47,8 @@ namespace usos_rpc {
                 throw Exception(ExceptionType::CONFIG, "Empty 'calendar' property! Please fix the config file.");
             }
             auto app_id = parsed_file.get_as<std::string>("discord_app_id");
-            if (!app_id || (_discord_app_id = app_id->get()).size() == 0) {
+            if (!app_id || (_discord_app_id = app_id->get()).size() == 0
+                || !std::regex_match(_discord_app_id, DISCORD_ID)) {
                 throw Exception(
                     ExceptionType::CONFIG, "Invalid 'discord_app_id' property! Please fix the config file."
                 );
@@ -66,6 +75,12 @@ namespace usos_rpc {
             return _calendar;
         }
 
+        /// @brief Returns parsed calendar structure, cached in this object.
+        [[nodiscard]]
+        icalendar::Calendar& calendar() {
+            return _calendar;
+        }
+
         /// @brief Returns chosen calendar path/link.
         [[nodiscard]]
         const std::string& calendar_location() const {
@@ -79,4 +94,24 @@ namespace usos_rpc {
         }
     };
 
+    /// @brief Reads and parses config.toml.
+    /// @return parsed Config instance
+    /// @throws usos_rpc::Exception when reading or parsing the file fails
+    Config read_config() {
+        auto path = *get_config_directory() / "config.toml";
+        auto contents = read_file(path.string());
+        try {
+            auto table = toml::parse(contents);
+            return Config(table);
+        } catch (const toml::parse_error& e) {
+            throw Exception(
+                ExceptionType::CONFIG,
+                "{} at line {}, column {}, in {}",
+                e.description(),
+                e.source().begin.line,
+                e.source().begin.column,
+                path.string()
+            );
+        }
+    }
 }

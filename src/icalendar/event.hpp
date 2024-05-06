@@ -97,54 +97,63 @@ namespace usos_rpc::icalendar {
         }
 
         /// @brief Returns unique identifier of the event.
+        /// @return event unique identifier
         [[nodiscard]]
         const std::string& uid() const {
             return _uid;
         }
 
         /// @brief Returns university subject.
+        /// @return event subject
         [[nodiscard]]
         const std::string& subject() const {
             return _subject;
         }
 
         /// @brief Returns event type abbreviation.
+        /// @return event type
         [[nodiscard]]
         const std::optional<std::string>& type() const {
             return _type;
         }
 
         /// @brief Returns URL pointing at the event in the Web version of USOS.
+        /// @return event URL
         [[nodiscard]]
         const std::optional<std::string>& url() const {
             return _url;
         }
 
         /// @brief Returns event location.
+        /// @return event location
         [[nodiscard]]
         const Location& location() const {
             return _location;
         }
 
         /// @brief Returns date and time of the beginning of the event.
+        /// @return start of the event
         [[nodiscard]]
         const date::local_seconds& start() const {
             return _start;
         }
 
         /// @brief Returns date and time of the end of the event.
+        /// @return end of the event
         [[nodiscard]]
         const date::local_seconds& end() const {
             return _end;
         }
 
         /// @brief Returns date and time of the beginning of the event as a zoned time.
+        /// @return zoned start of the event
         [[nodiscard]]
         const date::zoned_seconds start(const date::time_zone* tz) const {
             return date::zoned_seconds(tz, _start);
         }
 
         /// @brief Returns date and time of the end of the event as a zoned time.
+        /// @return zoned end of the event
         [[nodiscard]]
         const date::zoned_seconds end(const date::time_zone* tz) const {
             return date::zoned_seconds(tz, _end);
@@ -185,7 +194,7 @@ namespace usos_rpc::icalendar {
 
             return fmt::format(
                 "{} - {} ({} - {}):\n{}\n",
-                fmt::styled(event._subject, fmt::fg(fmt::terminal_color::green)),
+                fmt::styled(event._subject, colors::OTHER),
                 event._type.value_or("???"),
                 start,
                 end,

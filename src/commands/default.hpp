@@ -7,8 +7,11 @@
 #include <cstdlib>
 #include <string>
 
-#include "exceptions.hpp"
-#include "logging.hpp"
+#include "../config.hpp"
+#include "../exceptions.hpp"
+#include "../files.hpp"
+#include "../logging.hpp"
+#include "build_info.hpp"
 
 #include "discord_rpc.h"
 
@@ -59,10 +62,17 @@ extern "C" void ctrl_c_signal_handler(int signal) {
 
 namespace usos_rpc::commands {
 
-    void run_default(const std::string& id) {
+    void run_default() {
+        lprint(colors::OTHER, "USOS Discord Rich Presence {}\n", VERSION);
+
+        lprint("Reading configuration file (in {})...\n", get_config_directory()->string());
+        auto config = read_config();
+        lprint(colors::SUCCESS, "Configuration file and calendar have been read successfully!\n");
+        lprint("Next event: \n{}\n", *config.calendar().next_event().value());  // TODO remove
+
         std::signal(SIGINT, ctrl_c_signal_handler);
         std::signal(SIGTERM, ctrl_c_signal_handler);
-        Discord_Initialize(id.c_str(), &handlers, false, nullptr);
+        Discord_Initialize(config.discord_app_id().c_str(), &handlers, false, nullptr);
 
         try {
             DiscordRichPresence presence = {
@@ -92,7 +102,7 @@ namespace usos_rpc::commands {
             throw;
         }
         Discord_Shutdown();
-        lprint(colors::SUCCESS, "Rich presence stopped successfully!\n");
+        lprint(colors::SUCCESS, "Rich presence has been stopped successfully!\n");
     }
 
 }

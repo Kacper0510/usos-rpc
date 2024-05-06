@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <chrono>
+#include <optional>
 #include <set>
 #include <string>
 
@@ -44,6 +46,22 @@ namespace usos_rpc::icalendar {
             _time_zone = date::locate_zone(timezone);
         }
 
+        /// @brief Returns an iterator to the current/upcoming event, or nullopt if none were found.
+        /// In order to do that, additionally deletes events from the past from the list of events.
+        /// @return pointer (iterator) to the next event or nullopt
+        std::optional<std::set<Event>::iterator> next_event() {
+            auto now = std::chrono::system_clock::now();
+            auto it = _events.begin();
+            while (it != _events.end()) {
+                if (it->end(_time_zone).get_sys_time() < now) {
+                    it = _events.erase(it);
+                } else {
+                    return it;
+                }
+            }
+            return std::nullopt;
+        }
+
         /// @brief Returns the calendar name.
         /// @return calendar name
         [[nodiscard]]
@@ -78,7 +96,7 @@ namespace usos_rpc::icalendar {
         friend auto format_as(const Calendar& event) {
             return fmt::format(
                 "{}\nProduct ID: {}\nTime zone: {}\nEvents:\n\n{}",
-                fmt::styled(event._name, fmt::fg(fmt::terminal_color::blue)),
+                fmt::styled(event._name, colors::OTHER),
                 event._product_id,
                 event._time_zone->name(),
                 fmt::join(event._events, "\n")

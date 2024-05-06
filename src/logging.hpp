@@ -77,8 +77,11 @@ namespace usos_rpc {
         /// @brief Fatal errors formatting style.
         constexpr fmt::text_style FATAL_ERROR = fmt::fg(fmt::terminal_color::red);
 
-        /// @brief How messages indicating some kind of a success should be formatted.
+        /// @brief Formatting style for messages indicating some kind of a success.
         constexpr fmt::text_style SUCCESS = fmt::fg(fmt::terminal_color::green);
+
+        /// @brief Formatting style for other messages that should stand out.
+        constexpr fmt::text_style OTHER = fmt::fg(fmt::terminal_color::blue);
     }
 
 }

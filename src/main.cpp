@@ -29,11 +29,7 @@ void choose_command(std::vector<std::string>& args) {
     }
 
     initialize_config();
-
-    if (args.empty()) {
-        throw Exception(ExceptionType::ARGUMENTS, "Not enough arguments!");
-    }
-    commands::run_default(args.back());
+    commands::run_default();
 }
 
 /// @brief Entry point of the program.

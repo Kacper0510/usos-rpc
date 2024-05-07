@@ -1,5 +1,5 @@
 /// @file
-/// @brief Utility functions as an extension for standard library.
+/// @brief Things that should be in the standard library, but for some reason are not.
 
 #pragma once
 
@@ -75,5 +75,20 @@ namespace usos_rpc {
         T&&... values
     ) {
         return { std::forward<T>(values)... };
+    }
+
+    /// @brief Returns the minimal value out of two chrono durations.
+    /// @see https://stackoverflow.com/a/40790329/23240713
+    /// @tparam T1 first duration type
+    /// @tparam T2 second duration type
+    /// @param duration1 first duration
+    /// @param duration2 second duration
+    /// @return the minimum
+    template <typename T1, typename T2>
+    auto min_duration(const T1& duration1, const T2& duration2) {
+        using CommonType = typename std::common_type<T1, T2>::type;
+        const auto d1 = std::chrono::duration_cast<CommonType>(duration1);
+        const auto d2 = std::chrono::duration_cast<CommonType>(duration2);
+        return std::min(d1, d2);
     }
 }

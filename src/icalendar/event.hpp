@@ -86,6 +86,9 @@ namespace usos_rpc::icalendar {
             }
 
             auto description_parts = split(description, "\n");
+            std::erase_if(description_parts, [](const auto& value) {
+                return strip(value) == "";
+            });
             if (description_parts.size() == 3) {
                 auto room_split = split(description_parts[0], ": ");
                 auto room = room_split.size() == 2 ? room_split[1] : description_parts[0];

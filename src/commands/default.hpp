@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <chrono>
 #include <csignal>
 #include <cstdlib>
 #include <string>
@@ -11,8 +12,10 @@
 #include "../exceptions.hpp"
 #include "../files.hpp"
 #include "../logging.hpp"
+#include "../utilities.hpp"
 #include "build_info.hpp"
 
+#include "date/date.h"
 #include "discord_rpc.h"
 
 namespace {
@@ -49,6 +52,58 @@ namespace {
         .joinRequest = nullptr,
     };
 
+    /// @brief Service loop contents.
+    /// @param next time of next update
+    void update_presence(std::chrono::time_point<std::chrono::system_clock>& next, usos_rpc::Config& config) {
+        using namespace usos_rpc;
+
+        auto now = std::chrono::system_clock::now();
+        if (next < now) {
+            try {
+                lprint("Refreshing calendar data...\n");
+                bool changed = config.refresh_calendar();
+                if (changed) {
+                    lprint(colors::SUCCESS, "Calendar data has been refreshed successfully:\n");
+                    lprint("{}\n", config.calendar().name());
+                } else {
+                    lprint("Nothing has changed in the calendar since the last check.\n");
+                }
+            } catch (const Exception&) {
+                eprint(colors::WARNING, "Calendar refresh failed!\n");
+            }
+
+            lprint(
+                colors::OTHER,
+                "Update interval reached at {}\n",
+                date::format("%Y-%m-%d %H:%M", date::zoned_time(date::current_zone(), next))
+            );
+
+            auto maybe_event = config.calendar().next_event();
+            if (maybe_event.has_value()) {
+                auto event = maybe_event.value();
+                if (event->start(config.calendar().time_zone()).get_sys_time() < now) {
+                    Discord_UpdatePresence(config.create_presence_object(*event));
+                    auto until_end = event->end(config.calendar().time_zone()).get_sys_time() - now;
+                    next += min_duration(config.idle_refresh_rate(), until_end);
+                    lprint("Current event:\n{}", *event);
+                } else {
+                    Discord_ClearPresence();
+                    auto until_start = event->start(config.calendar().time_zone()).get_sys_time() - now;
+                    next += min_duration(config.idle_refresh_rate(), until_start);
+                }
+                lprint(colors::SUCCESS, "Rich presence has been refreshed successfully!\n");
+            } else {
+                eprint(colors::WARNING, "No upcoming events were found!\n");
+                Discord_ClearPresence();
+                next += config.idle_refresh_rate();
+            }
+        }
+
+        try {
+            Discord_RunCallbacks();
+        } catch (const Exception&) {}  // These exceptions are purely informational.
+    }
+
     /// @brief Detects when Ctrl+C was pressed (SIGINT) or program should terminate (SIGTERM).
     volatile std::sig_atomic_t ctrl_c_detected = 0;
 
@@ -67,35 +122,16 @@ namespace usos_rpc::commands {
 
         lprint("Reading configuration file (in {})...\n", get_config_directory()->string());
         auto config = read_config();
-        lprint(colors::SUCCESS, "Configuration file and calendar have been read successfully!\n");
-        lprint("Next event: \n{}\n", *config.calendar().next_event().value());  // TODO remove
+        lprint(colors::SUCCESS, "Configuration file has been read successfully!\n");
 
         std::signal(SIGINT, ctrl_c_signal_handler);
         std::signal(SIGTERM, ctrl_c_signal_handler);
         Discord_Initialize(config.discord_app_id().c_str(), &handlers, false, nullptr);
 
         try {
-            DiscordRichPresence presence = {
-                .state = "test",
-                .details = "¯\\_(ツ)_/¯",
-                .startTimestamp = std::time(nullptr) + 60,
-                .endTimestamp = std::time(nullptr) + 3 * 60,
-                .largeImageKey = nullptr,
-                .largeImageText = nullptr,
-                .smallImageKey = nullptr,
-                .smallImageText = nullptr,
-                .partyId = nullptr,
-                .partySize = 0,
-                .partyMax = 0,
-                .partyPrivacy = 0,
-                .matchSecret = nullptr,
-                .joinSecret = nullptr,
-                .spectateSecret = nullptr,
-                .instance = 0,
-            };
-            Discord_UpdatePresence(&presence);
+            auto next_update = std::chrono::system_clock::now();
             while (!ctrl_c_detected) {
-                Discord_RunCallbacks();
+                update_presence(next_update, config);
             }
         } catch (...) {
             Discord_Shutdown();

@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <chrono>
+#include <optional>
 #include <regex>
 #include <string>
 
@@ -12,12 +14,15 @@
 #include "icalendar/parser.hpp"
 #include "requests.hpp"
 
+#include "discord_rpc.h"
 #include "toml++/toml.hpp"
 
 namespace {
 
     /// @brief Regular expression for a valid Discord identifier (uint64_t).
     const std::regex DISCORD_ID(R"(\d{1,20})");
+    /// @brief Regular expression for removing DTSTAMP occurences.
+    const std::regex DTSTAMP(R"(\nDTSTAMP;VALUE=DATE-TIME:\d{8}T\d{6}Z?\r?\n)");
 
 }
 
@@ -30,6 +35,8 @@ namespace usos_rpc {
         /// @brief Discord Rich Presence application identifier.
         /// @see https://discord.com/developers/applications
         std::string _discord_app_id;
+        /// @brief Calendar data refresh rate when idle (no upcoming events in the nearest future).
+        long long _idle_refresh_rate = 30;
 
         /// @brief iCalendar file hash.
         std::size_t _calendar_hash;
@@ -39,13 +46,13 @@ namespace usos_rpc {
     public:
         /// @brief Constructs an object based on parsed TOML data.
         /// @param parsed_file TOML data for config.toml
-        /// @throws usos_rpc::Exception when the necessary properties are invalid or not found,
-        /// when reading or parsing calendar data fails
+        /// @throws usos_rpc::Exception when the necessary properties are invalid or not found
         explicit Config(const toml::table& parsed_file): _calendar_hash() {
             auto cal = parsed_file.get_as<std::string>("calendar");
             if (!cal || (_calendar_location = cal->get()).size() == 0) {
                 throw Exception(ExceptionType::CONFIG, "Empty 'calendar' property! Please fix the config file.");
             }
+
             auto app_id = parsed_file.get_as<std::string>("discord_app_id");
             if (!app_id || (_discord_app_id = app_id->get()).size() == 0
                 || !std::regex_match(_discord_app_id, DISCORD_ID)) {
@@ -53,20 +60,73 @@ namespace usos_rpc {
                     ExceptionType::CONFIG, "Invalid 'discord_app_id' property! Please fix the config file."
                 );
             }
-            refresh_calendar();
+
+            auto refresh = parsed_file.get_as<long long>("idle_refresh_rate");
+            if (refresh && refresh->get() > 0) {
+                _idle_refresh_rate = refresh->get();
+            }
         }
 
         /// @brief Refreshes cached calendar structure based on the given link if its hash has changed.
-        /// @return new or cached calendar object
+        /// @return true if refresh was necessary, false if nothing has changed
         /// @throws usos_rpc::Exception when reading or parsing calendar data fails
-        const icalendar::Calendar& refresh_calendar() {
-            auto cal = fetch_content(_calendar_location);
+        bool refresh_calendar() {
+            auto cal_raw = fetch_content(_calendar_location);
+            // Remove DTSTAMP properties because they always change and mess up hashing.
+            auto cal = std::regex_replace(cal_raw, DTSTAMP, "\n");
+
             auto new_hash = std::hash<std::string> {}(cal);
             if (new_hash != _calendar_hash) {
                 _calendar = icalendar::parse(cal);
                 _calendar_hash = new_hash;
+                return true;
             }
-            return _calendar;
+            return false;
+        }
+
+        /// @brief Creates Discord Rich Presence representation based on given event.
+        /// @param event current event
+        /// @return Rich Presence object
+        [[nodiscard]]
+        const DiscordRichPresence* create_presence_object(const usos_rpc::icalendar::Event& event) {
+            // Caching objects to not create dangling pointers
+            static std::string subject;
+            static std::optional<std::string> location;
+            static DiscordRichPresence presence;
+
+            subject = event.type().has_value()
+                ? fmt::format("{} - {}", event.subject(), event.type().value())
+                : event.subject();
+            if (event.location().room.has_value() && event.location().building.has_value()) {
+                location = fmt::format("{} - {}", event.location().room.value(), event.location().building.value());
+            } else {
+                location = std::nullopt;
+            }
+            presence = {
+                .state =
+                    location
+                        .transform([](const auto& str) {
+                            return str.c_str();
+                        })
+                        .value_or(nullptr),
+                .details = subject.c_str(),
+                .startTimestamp = event.start(_calendar.time_zone()).get_sys_time().time_since_epoch().count(),
+                .endTimestamp = event.end(_calendar.time_zone()).get_sys_time().time_since_epoch().count(),
+                .largeImageKey = nullptr,
+                .largeImageText = nullptr,
+                .smallImageKey = nullptr,
+                .smallImageText = nullptr,
+                .partyId = nullptr,
+                .partySize = 0,
+                .partyMax = 0,
+                .partyPrivacy = 0,
+                .matchSecret = nullptr,
+                .joinSecret = nullptr,
+                .spectateSecret = nullptr,
+                .instance = 0,
+            };
+
+            return &presence;
         }
 
         /// @brief Returns parsed calendar structure, cached in this object.
@@ -79,6 +139,12 @@ namespace usos_rpc {
         [[nodiscard]]
         icalendar::Calendar& calendar() {
             return _calendar;
+        }
+
+        /// @brief Returns chosen idle calendar refresh rate.
+        [[nodiscard]]
+        std::chrono::minutes idle_refresh_rate() const {
+            return std::chrono::minutes(_idle_refresh_rate);
         }
 
         /// @brief Returns chosen calendar path/link.

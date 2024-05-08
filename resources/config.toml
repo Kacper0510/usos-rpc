@@ -1,3 +1,26 @@
+# USOS Discord Rich Presence configuration file
+
+# Where should we get our iCalendar data from?
+# On the USOS website, click on your timetable and in the top right corner of the page
+# there should be an export button with your personal calendar link.
+# EXAMPLE: 'webcal://apps.usos.<your_university>.edu.pl/services/tt/upcoming_ical?user_id=xxx&key=xxx'
+# TYPE: path to a file OR http(s)/webcal(s) link
 calendar = ''
+
+# Which Discord developer app should we use to show the activity?
+# Go to https://discord.com/developers/applications, create an app with a desired name
+# (if you don't have one already) and copy its application identifier into this field.
+# EXAMPLE: "100000000000000"
+# TYPE: unsigned integer OR string
 discord_app_id = ""
+
+# Number of minutes between automatic calendar data and Rich Presence refreshes
+# when no important events in the app are happening.
+# DEFAULT: 30
+# TYPE: unsigned integer
 idle_refresh_rate = 30
+
+# Temporary property for setting large image key in the presence payload.
+# EXPERIMENTAL
+# TYPE: string
+image_key = ""

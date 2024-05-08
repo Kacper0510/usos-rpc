@@ -56,6 +56,7 @@ namespace {
     /// @param next time of next update
     void update_presence(std::chrono::time_point<std::chrono::system_clock>& next, usos_rpc::Config& config) {
         using namespace usos_rpc;
+        constexpr std::chrono::seconds DESYNC_DELAY(3);  // Delay to make sure no desyncs happen.
 
         auto now = std::chrono::system_clock::now();
         if (next < now) {
@@ -84,12 +85,12 @@ namespace {
                 if (event->start(config.calendar().time_zone()).get_sys_time() < now) {
                     Discord_UpdatePresence(config.create_presence_object(*event));
                     auto until_end = event->end(config.calendar().time_zone()).get_sys_time() - now;
-                    next += min_duration(config.idle_refresh_rate(), until_end);
+                    next += min_duration(config.idle_refresh_rate(), until_end + DESYNC_DELAY);
                     lprint("Current event:\n{}", *event);
                 } else {
                     Discord_ClearPresence();
                     auto until_start = event->start(config.calendar().time_zone()).get_sys_time() - now;
-                    next += min_duration(config.idle_refresh_rate(), until_start);
+                    next += min_duration(config.idle_refresh_rate(), until_start + DESYNC_DELAY);
                 }
                 lprint(colors::SUCCESS, "Rich presence has been refreshed successfully!\n");
             } else {

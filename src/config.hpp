@@ -4,6 +4,7 @@
 #pragma once
 
 #include <chrono>
+#include <cstdint>
 #include <optional>
 #include <regex>
 #include <string>
@@ -36,7 +37,10 @@ namespace usos_rpc {
         /// @see https://discord.com/developers/applications
         std::string _discord_app_id;
         /// @brief Calendar data refresh rate when idle (no upcoming events in the nearest future).
-        long long _idle_refresh_rate = 30;
+        std::int64_t _idle_refresh_rate = 30;
+
+        /// @brief Temporary solution for global large image key.
+        std::optional<std::string> _image_key;
 
         /// @brief iCalendar file hash.
         std::size_t _calendar_hash;
@@ -53,17 +57,39 @@ namespace usos_rpc {
                 throw Exception(ExceptionType::CONFIG, "Empty 'calendar' property! Please fix the config file.");
             }
 
-            auto app_id = parsed_file.get_as<std::string>("discord_app_id");
-            if (!app_id || (_discord_app_id = app_id->get()).size() == 0
-                || !std::regex_match(_discord_app_id, DISCORD_ID)) {
+            auto raw_app_id = parsed_file.get("discord_app_id");
+            if (!raw_app_id) {
+                throw Exception(ExceptionType::CONFIG, "Empty 'discord_app_id' property! Please fix the config file.");
+            } else if (raw_app_id->is<std::int64_t>()) {
+                auto app_id = raw_app_id->value<std::int64_t>().value();
+                if (app_id <= 0) {
+                    throw Exception(
+                        ExceptionType::CONFIG, "Invalid 'discord_app_id' property! Please fix the config file."
+                    );
+                }
+                _discord_app_id = std::to_string(app_id);
+            } else if (raw_app_id->is<std::string>()) {
+                _discord_app_id = raw_app_id->value<std::string>().value();
+                if (_discord_app_id.size() == 0 || !std::regex_match(_discord_app_id, DISCORD_ID)) {
+                    throw Exception(
+                        ExceptionType::CONFIG, "Invalid 'discord_app_id' property! Please fix the config file."
+                    );
+                }
+            } else {
                 throw Exception(
-                    ExceptionType::CONFIG, "Invalid 'discord_app_id' property! Please fix the config file."
+                    ExceptionType::CONFIG,
+                    "Wrong type of 'discord_app_id' property! Please change it to a string or an integer."
                 );
             }
 
-            auto refresh = parsed_file.get_as<long long>("idle_refresh_rate");
+            auto refresh = parsed_file.get_as<std::int64_t>("idle_refresh_rate");
             if (refresh && refresh->get() > 0) {
                 _idle_refresh_rate = refresh->get();
+            }
+
+            auto key = parsed_file.get_as<std::string>("image_key");
+            if (key && key->get().size() > 0) {
+                _image_key = key->get();
             }
         }
 
@@ -103,16 +129,11 @@ namespace usos_rpc {
                 location = std::nullopt;
             }
             presence = {
-                .state =
-                    location
-                        .transform([](const auto& str) {
-                            return str.c_str();
-                        })
-                        .value_or(nullptr),
+                .state = location.transform(&std::string::c_str).value_or(nullptr),
                 .details = subject.c_str(),
                 .startTimestamp = event.start(_calendar.time_zone()).get_sys_time().time_since_epoch().count(),
                 .endTimestamp = event.end(_calendar.time_zone()).get_sys_time().time_since_epoch().count(),
-                .largeImageKey = nullptr,
+                .largeImageKey = _image_key.transform(&std::string::c_str).value_or(nullptr),
                 .largeImageText = nullptr,
                 .smallImageKey = nullptr,
                 .smallImageText = nullptr,

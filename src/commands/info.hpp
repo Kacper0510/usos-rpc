@@ -23,7 +23,12 @@ namespace usos_rpc::commands {
 
     /// @brief Prints the help message.
     void help() {
-        lprint(fmt::runtime(b::embed<"resources/help.ansi">().data()), fmt::arg("version", VERSION));
+        lprint(
+            fmt::runtime(b::embed<"resources/help.ansi">().data()),
+            fmt::arg("version", VERSION),
+            fmt::arg("exe_name", get_executable_path().filename().string()),
+            fmt::arg("github_url", GITHUB_URL)
+        );
     }
 
     /// @brief Prints the auto-selected config directory.

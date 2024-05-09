@@ -72,16 +72,16 @@ namespace usos_rpc {
 
     namespace colors {
         /// @brief Exception warnings formatting style.
-        constexpr fmt::text_style WARNING = fmt::fg(fmt::terminal_color::yellow);
+        constexpr fmt::text_style WARNING = fmt::fg(fmt::terminal_color::bright_yellow);
 
         /// @brief Fatal errors formatting style.
-        constexpr fmt::text_style FATAL_ERROR = fmt::fg(fmt::terminal_color::red);
+        constexpr fmt::text_style FATAL_ERROR = fmt::fg(fmt::terminal_color::bright_red);
 
         /// @brief Formatting style for messages indicating some kind of a success.
-        constexpr fmt::text_style SUCCESS = fmt::fg(fmt::terminal_color::green);
+        constexpr fmt::text_style SUCCESS = fmt::fg(fmt::terminal_color::bright_green);
 
         /// @brief Formatting style for other messages that should stand out.
-        constexpr fmt::text_style OTHER = fmt::fg(fmt::terminal_color::blue);
+        constexpr fmt::text_style OTHER = fmt::fg(fmt::terminal_color::bright_cyan);
     }
 
 }

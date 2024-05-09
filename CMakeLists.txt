@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(usos-rpc VERSION 0.2.0 HOMEPAGE_URL "github.com/Kacper0510/usos-rpc")
+project(usos-rpc VERSION 1.0.0 HOMEPAGE_URL "github.com/Kacper0510/usos-rpc")
 set(usos-rpc_COPYRIGHT "(c) 2024 Kacper Wojciuch <wkacper@spoko.pl>")
 message("[usos-rpc] Starting CMake configuration")
 

@@ -12,7 +12,9 @@
 
 #ifdef _WIN32
     #include <shlobj.h>
+    #include <windows.h>
 #else
+    #include <limits.h>
     #include <pwd.h>
     #include <unistd.h>
 #endif
@@ -87,6 +89,21 @@ namespace usos_rpc {
             throw Exception(ExceptionType::IO, fs_error.what());
         }
     }
+
+    /// @brief Retrieves current executable file path.
+    /// @see https://stackoverflow.com/a/55579815/23240713
+    /// @return executable path
+    std::filesystem::path get_executable_path() {  // clang-format off
+        #ifdef _WIN32
+            wchar_t path[MAX_PATH] = { 0 };
+            GetModuleFileNameW(nullptr, path, MAX_PATH);
+            return path;
+        #else
+            char result[PATH_MAX];
+            ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
+            return std::string(result, (count > 0) ? count : 0);
+        #endif
+    }  // clang-format on
 
     /// @brief Reads file contents.
     /// @param path file path to read

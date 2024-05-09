@@ -1,1 +1,22 @@
-USOS Discord Rich Presence {version}
+[93mUSOS Discord Rich Presence {version}[0m
+Links your USOS timetable to Discord as an activity.
+
+[92mUsage:[0m [93m{exe_name}[0m [96m[command][0m
+
+If no command has been specified, the program runs in "service mode", i.e.
+does not ever stop unless terminated manually and continuously sends relevant
+Rich Presence information to Discord, according to the configuration file.
+
+[92mAvailable commands (can also be run with the preceding hyphens):[0m
+    [96mh, ?, help[0m          Shows this help message.
+    [96mv, version[0m          Shows full version number and dependencies.
+    [96mc, config[0m           Prints currently selected configuration directory
+    [96m[0m                    path. See the next section for more information.
+
+[92mEnvironment variables:[0m
+    [96mUSOS_RPC_DIR[0m        Changes configuration directory to a custom location.
+    [96m[0m                    Must be a valid path. By default, the home directory
+    [96m[0m                    is selected on Linux and %AppData% on Windows.
+    [96mNO_COLOR[0m            Disables ANSI color codes in the console output.
+
+Please report any bugs on GitHub: https://{github_url}/issues

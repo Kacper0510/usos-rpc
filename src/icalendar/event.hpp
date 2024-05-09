@@ -6,6 +6,7 @@
 #include <optional>
 #include <string>
 #include <tuple>
+#include <variant>
 
 #include "../exceptions.hpp"
 #include "utilities.hpp"
@@ -28,12 +29,19 @@ namespace usos_rpc::icalendar {
         /// @brief URL pointing at the event in the web version of USOS.
         std::optional<std::string> _url;
 
-        /// @brief Event location.
-        struct Location {
-            std::optional<std::string> room;
-            std::optional<std::string> building;
+        /// @brief Full event location structure.
+        struct FullLocation {
+            std::string room;
+            std::string building;
             std::string address;
-        } _location;
+        };
+
+        using Location = std::variant<std::monostate, std::string, FullLocation>;
+        /// @brief Event location. Can be one of three variants:
+        /// std::monostate - no location was found,
+        /// std::string - only the address was parsed successfully,
+        /// usos_rpc::Event::FullLocation - location was fully parsed.
+        Location _location;
 
         /// @brief Date and time of the beginning of the event.
         date::local_seconds _start;
@@ -49,7 +57,7 @@ namespace usos_rpc::icalendar {
         /// @param dtend end of the event
         /// @param uid identifier
         /// @param description contains partial location and URL
-        /// @param location address
+        /// @param location optional address
         /// @throws usos_rpc::Exception when timestamp parsing fails
         Event(
             const std::string& summary,
@@ -57,7 +65,7 @@ namespace usos_rpc::icalendar {
             const std::string& dtend,
             const std::string& uid,
             const std::string& description,
-            const std::string& location
+            const std::optional<std::string>& location
         ):
         _uid(uid) {
             auto summary_parts = split(summary, " - ");
@@ -85,6 +93,10 @@ namespace usos_rpc::icalendar {
                 throw Exception(ExceptionType::ICALENDAR, "Could not parse event timestamp!");
             }
 
+            if (!location.has_value()) {
+                return;
+            }
+
             auto description_parts = split(description, "\n");
             std::erase_if(description_parts, [](const auto& value) {
                 return strip(value) == "";
@@ -92,10 +104,11 @@ namespace usos_rpc::icalendar {
             if (description_parts.size() == 3) {
                 auto room_split = split(description_parts[0], ": ");
                 auto room = room_split.size() == 2 ? room_split[1] : description_parts[0];
-                _location = { .room = room, .building = description_parts[1], .address = location };
+                _location =
+                    FullLocation { .room = room, .building = description_parts[1], .address = location.value() };
                 _url = description_parts[2];
             } else {
-                _location = { .address = location };
+                _location = std::string(location.value());
             }
         }
 
@@ -127,11 +140,43 @@ namespace usos_rpc::icalendar {
             return _url;
         }
 
-        /// @brief Returns event location.
-        /// @return event location
+        /// @brief Returns address if the event has one.
+        /// @return event address or nullptr
         [[nodiscard]]
-        const Location& location() const {
-            return _location;
+        const std::string* address() const {
+            if (std::holds_alternative<std::string>(_location)) {
+                return &std::get<std::string>(_location);
+            } else if (std::holds_alternative<FullLocation>(_location)) {
+                return &std::get<FullLocation>(_location).address;
+            }
+            return nullptr;
+        }
+
+        /// @brief Returns room if the event has one.
+        /// @return event room or nullptr
+        [[nodiscard]]
+        const std::string* room() const {
+            if (std::holds_alternative<FullLocation>(_location)) {
+                return &std::get<FullLocation>(_location).room;
+            }
+            return nullptr;
+        }
+
+        /// @brief Returns building if the event has one.
+        /// @return event building or nullptr
+        [[nodiscard]]
+        const std::string* building() const {
+            if (std::holds_alternative<FullLocation>(_location)) {
+                return &std::get<FullLocation>(_location).building;
+            }
+            return nullptr;
+        }
+
+        /// @brief Checks whether the event has full location information (i.e. building, room and address data).
+        /// @return result of the check
+        [[nodiscard]]
+        bool has_full_location() const {
+            return std::holds_alternative<FullLocation>(_location);
         }
 
         /// @brief Returns date and time of the beginning of the event.
@@ -184,15 +229,15 @@ namespace usos_rpc::icalendar {
             auto end = date::format("%H:%M", event._end);
 
             std::string location;
-            if (event._location.room.has_value() && event._location.building.has_value()) {
+            if (event.has_full_location()) {
                 location = fmt::format(
                     "{} - {}, {}",
-                    event._location.room.value(),
-                    event._location.building.value(),
-                    event._location.address
+                    std::get<Event::FullLocation>(event._location).room,
+                    std::get<Event::FullLocation>(event._location).building,
+                    std::get<Event::FullLocation>(event._location).address
                 );
-            } else {
-                location = event._location.address;
+            } else if (std::holds_alternative<std::string>(event._location)) {
+                location = std::get<std::string>(event._location);
             }
 
             return fmt::format(

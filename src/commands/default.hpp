@@ -17,6 +17,7 @@
 
 #include "date/date.h"
 #include "discord_rpc.h"
+#include "fmt/chrono.h"
 
 namespace {
 
@@ -91,6 +92,12 @@ namespace {
                     Discord_ClearPresence();
                     auto until_start = event->start(config.calendar().time_zone()).get_sys_time() - now;
                     next += min_duration(config.idle_refresh_rate(), until_start + DESYNC_DELAY);
+                    if (until_start < std::chrono::days(1)) {
+                        lprint("Next event in {:.0%H:%M:%S}\n", until_start);
+                    } else {
+                        auto plural = until_start >= std::chrono::days(2) ? "s" : "";
+                        lprint("Next event in {:%j} day{}\n", until_start, plural);
+                    }
                 }
                 lprint(colors::SUCCESS, "Rich presence has been refreshed successfully!\n");
             } else {

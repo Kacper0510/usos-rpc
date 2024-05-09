@@ -123,11 +123,9 @@ namespace usos_rpc {
             subject = event.type().has_value()
                 ? fmt::format("{} - {}", event.subject(), event.type().value())
                 : event.subject();
-            if (event.location().room.has_value() && event.location().building.has_value()) {
-                location = fmt::format("{} - {}", event.location().room.value(), event.location().building.value());
-            } else {
-                location = std::nullopt;
-            }
+            location = event.has_full_location()
+                ? std::optional(fmt::format("{} - {}", *event.room(), *event.building()))
+                : std::nullopt;
             presence = {
                 .state = location.transform(&std::string::c_str).value_or(nullptr),
                 .details = subject.c_str(),

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <algorithm>
+#include <optional>
 #include <regex>
 #include <set>
 #include <string>
@@ -62,17 +63,33 @@ namespace {
     /// @param begin beginning of the line range
     /// @param end end of the line range
     /// @param name property name
-    /// @return property value
-    /// @throws usos_rpc::Exception when the property is missing
+    /// @return property value or std::nullopt when not found
     [[nodiscard]]
-    std::string get_property(const lines_iterator& begin, const lines_iterator& end, const std::string& name) {
+    std::optional<std::string> get_optional_property(
+        const lines_iterator& begin, const lines_iterator& end, const std::string& name
+    ) {
         auto iter = std::find_if(begin, end, [&name](const std::string& line) {
             return line.starts_with(name);
         });
         if (iter == end) {
-            throw usos_rpc::Exception(usos_rpc::ExceptionType::ICALENDAR, "Missing property: {}", name);
+            return std::nullopt;
         }
         return iter->substr(name.size() + 1);
+    }
+
+    /// @brief Extracts a property from the iCalendar text.
+    /// @param begin beginning of the line range
+    /// @param end end of the line range
+    /// @param name property name
+    /// @return property value
+    /// @throws usos_rpc::Exception when the property is missing
+    [[nodiscard]]
+    std::string get_property(const lines_iterator& begin, const lines_iterator& end, const std::string& name) {
+        auto prop = get_optional_property(begin, end, name);
+        if (prop.has_value()) {
+            return prop.value();
+        }
+        throw usos_rpc::Exception(usos_rpc::ExceptionType::ICALENDAR, "Missing property: {}", name);
     }
 
     /// @brief Extracts a property from the iCalendar text.
@@ -118,7 +135,7 @@ namespace usos_rpc::icalendar {
                         dtend,
                         get_property(iter, end, "UID"),
                         get_property(iter, end, "DESCRIPTION"),
-                        get_property(iter, end, "LOCATION")
+                        get_optional_property(iter, end, "LOCATION")
                     );
                     events.insert(event);
                 } catch (const Exception& err) {

@@ -30,7 +30,7 @@ bool usos_rpc::should_show_colored_output() {
 }
 
 void usos_rpc::initialize_logging() {
-    if (log_file != nullptr) {
+    if (log_file) {
         return;
     }
 
@@ -51,7 +51,8 @@ void usos_rpc::log(std::ostream& stream, const std::string& to_print) {
         stream << stripped;
     }
 
-    if (log_file != nullptr) {
+    if (log_file) {
         *log_file << stripped;
+        log_file->flush();
     }
 }

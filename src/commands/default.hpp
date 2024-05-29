@@ -7,6 +7,7 @@
 #include <csignal>
 #include <cstdlib>
 #include <string>
+#include <thread>
 
 #include "../config.hpp"
 #include "../exceptions.hpp"
@@ -125,6 +126,7 @@ extern "C" void ctrl_c_signal_handler(int signal) {
 
 namespace usos_rpc::commands {
 
+    /// @brief Runs the default action of the executable - "service mode".
     void run_default() {
         lprint(colors::OTHER, "USOS Discord Rich Presence {}\n", VERSION);
 
@@ -136,9 +138,13 @@ namespace usos_rpc::commands {
         std::signal(SIGTERM, ctrl_c_signal_handler);
         Discord_Initialize(config.discord_app_id().c_str(), &handlers, false, nullptr);
 
+        // Delay between Discord updates/callbacks to lessen the CPU load.
+        constexpr std::chrono::milliseconds CALLBACK_DELAY(250);
+
         try {
             auto next_update = std::chrono::system_clock::now();
             while (!ctrl_c_detected) {
+                std::this_thread::sleep_for(CALLBACK_DELAY);
                 update_presence(next_update, config);
             }
         } catch (...) {

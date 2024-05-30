@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(usos-rpc VERSION 1.0.0 HOMEPAGE_URL "github.com/Kacper0510/usos-rpc")
+project(usos-rpc VERSION 1.0.1 HOMEPAGE_URL "github.com/Kacper0510/usos-rpc")
 set(usos-rpc_COPYRIGHT "(c) 2024 Kacper Wojciuch <wkacper@spoko.pl>")
 message("[usos-rpc] Starting CMake configuration")
 
@@ -16,9 +16,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # 'date' uses old CMake version
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
-
-# 'DiscordRPC' uses old CMake version
-set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
 
 #[==============================[
   Main executable
@@ -62,6 +59,14 @@ endif()
 include(FetchContent)
 set(FETCHCONTENT_QUIET FALSE)
 set(usos-rpc_DEPENDENCIES "\n")
+
+
+#[===[ git ]===]#
+# Necessary for the build.
+find_package(Git)
+if(NOT GIT_EXECUTABLE)
+  message(FATAL_ERROR "[usos-rpc] 'git' not found - you need to install it!")
+endif()
 
 
 #[===[ fmt ]===]#
@@ -160,19 +165,13 @@ FetchContent_Declare(
   discord-rpc
   GIT_REPOSITORY "https://github.com/discord/discord-rpc.git"
   GIT_TAG ${discord_rpc_version}
+  PATCH_COMMAND ${GIT_EXECUTABLE} apply ${PROJECT_SOURCE_DIR}/discord-rpc.patch
+  UPDATE_DISCONNECTED ON
   SYSTEM
 )
 FetchContent_MakeAvailable(discord-rpc)
 target_link_libraries(usos-rpc discord-rpc)
 target_include_directories(usos-rpc PRIVATE "${discord-rpc_SOURCE_DIR}/include")
-
-# Fix .clang-format duplicates
-file(READ "${discord-rpc_SOURCE_DIR}/.clang-format" discord_rpc_clang_format)
-string(REPLACE "\n" ";" discord_rpc_clang_format "${discord_rpc_clang_format}")
-list(REMOVE_DUPLICATES discord_rpc_clang_format)
-list(FILTER discord_rpc_clang_format EXCLUDE REGEX "^Language:.+$")
-string(REPLACE ";" "\n" discord_rpc_clang_format "${discord_rpc_clang_format}")
-file(WRITE "${discord-rpc_SOURCE_DIR}/.clang-format" ${discord_rpc_clang_format})
 
 string(SUBSTRING ${discord_rpc_version} 0 7 discord_rpc_version)  # Shortened git hash
 string(APPEND usos-rpc_DEPENDENCIES "\"DiscordRPC ${discord_rpc_version}\",\n")
@@ -214,7 +213,7 @@ message("[usos-rpc] Completed fetching 'battery-embed'")
 
 #[===[ tzdata ]===]#
 # IANA time zone database, needed for 'date' on Windows.
-if (WIN32)
+if(WIN32)
   FetchContent_Declare(
     tzdata
     URL "https://www.iana.org/time-zones/repository/tzdata-latest.tar.gz"
@@ -274,15 +273,12 @@ endforeach()
   Build information header
 ]==============================]#
 
-find_package(Git)
-if(GIT_EXECUTABLE)
-  execute_process(
-    COMMAND ${GIT_EXECUTABLE} describe --always --dirty --exclude '*'
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    OUTPUT_VARIABLE git_commit_string
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-  )
-endif()
+execute_process(
+  COMMAND ${GIT_EXECUTABLE} describe --always --dirty --exclude '*'
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  OUTPUT_VARIABLE git_commit_string
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 if(git_commit_string STREQUAL "")
   set(usos-rpc_FULL_VERSION "${CMAKE_PROJECT_VERSION}")
 else()

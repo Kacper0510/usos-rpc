@@ -6,8 +6,8 @@
 #include <vector>
 
 #include "commands/default.hpp"
+#include "commands/extract.hpp"
 #include "commands/info.hpp"
-#include "commands/parser.hpp"
 #include "exceptions.hpp"
 #include "logging.hpp"
 #include "preinit.hpp"

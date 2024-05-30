@@ -1,5 +1,5 @@
 /// @file
-/// @brief Command line arguments parsing helper.
+/// @brief Command line arguments extraction helper.
 
 #pragma once
 

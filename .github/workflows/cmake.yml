@@ -12,20 +12,20 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-24.04, windows-2022]
         build_type: [Release]
-        c_compiler: [gcc-13, cl]
+        c_compiler: [gcc-14, cl]
         include:
-          - os: windows-latest
+          - os: windows-2022
             c_compiler: cl
             cpp_compiler: cl
-          - os: ubuntu-latest
-            c_compiler: gcc-13
-            cpp_compiler: g++-13
+          - os: ubuntu-24.04
+            c_compiler: gcc-14
+            cpp_compiler: g++-14
         exclude:
-          - os: windows-latest
-            c_compiler: gcc-13
-          - os: ubuntu-latest
+          - os: windows-2022
+            c_compiler: gcc-14
+          - os: ubuntu-24.04
             c_compiler: cl
 
     steps:

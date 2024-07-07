@@ -22,14 +22,20 @@ namespace usos_rpc::commands {
     }
 
     /// @brief Prints the help message.
-    void help() {
+    void help() {  // clang-format off
+        #ifdef _WIN32
+            auto windows_help = b::embed<"resources/windows.ansi">().data();
+        #else
+            constexpr const char* windows_help = "";
+        #endif
         lprint(
             fmt::runtime(b::embed<"resources/help.ansi">().data()),
             fmt::arg("version", VERSION),
             fmt::arg("exe_name", get_executable_path().filename().string()),
-            fmt::arg("github_url", GITHUB_URL)
+            fmt::arg("github_url", GITHUB_URL),
+            fmt::arg("windows", windows_help)
         );
-    }
+    }  // clang-format on
 
     /// @brief Prints the auto-selected config directory.
     void config() {

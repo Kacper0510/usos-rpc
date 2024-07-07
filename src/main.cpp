@@ -12,9 +12,13 @@
 #include "logging.hpp"
 #include "preinit.hpp"
 
+#ifdef _WIN32
+    #include "commands/windows.hpp"
+#endif
+
 /// @brief De facto true main function. Chooses appropriate action based on given command, if any.
 /// @param args reversed command line argument list
-void choose_command(std::vector<std::string>& args) {
+void choose_command(std::vector<std::string>& args) {  // clang-format off
     using namespace usos_rpc;
 
     if (commands::check_command(args, "version")) {
@@ -28,9 +32,21 @@ void choose_command(std::vector<std::string>& args) {
         return;
     }
 
+    #ifdef _WIN32  
+        if (commands::check_command(args, "install")) {
+            commands::install();
+            return;
+        } else if (commands::check_command(args, "uninstall")) {
+            commands::uninstall();
+            return;
+        } else if (commands::check_command(args, "background")) {
+            WindowsConsole::hide_permanently();
+        }
+    #endif
+
     initialize_config();
     commands::run_default();
-}
+}  // clang-format on
 
 /// @brief Entry point of the program.
 /// @param argc number of command line arguments

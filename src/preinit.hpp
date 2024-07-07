@@ -15,7 +15,7 @@
 #include "date/tz.h"
 
 #ifdef _WIN32
-    #include "windows.h"
+    #include <windows.h>
 #endif
 
 namespace usos_rpc {
@@ -33,7 +33,14 @@ namespace usos_rpc {
             UINT _code_page = 0;
 
             /// @brief Whether the features of this class are enabled.
-            bool _enabled = false;
+            enum class State {
+                /// @brief Default console state after app startup or just before exit.
+                DEFAULT,
+                /// @brief Indicates that some changes that should be reverted were made to the console setup.
+                MODIFIED,
+                /// @brief The console was disabled/hidden with Windows API.
+                FREED,
+            } _state = State::DEFAULT;
 
             /// @brief Singleton instance.
             static WindowsConsole _instance;
@@ -41,7 +48,7 @@ namespace usos_rpc {
         public:
             /// @brief Enables all features.
             static void enable_features() {
-                if (_instance._enabled) {
+                if (_instance._state != State::DEFAULT) {
                     return;
                 }
 
@@ -49,7 +56,16 @@ namespace usos_rpc {
                     _instance.enable_colors();
                 }
                 _instance.enable_unicode();
-                _instance._enabled = true;
+                _instance._state = State::MODIFIED;
+            }
+
+            /// @brief Hides/disables console window for the entire duration of this app run.
+            static void hide_permanently() {
+                _instance.disable_features();
+                if (_instance._state != State::FREED) {
+                    FreeConsole();
+                    _instance._state = State::FREED;
+                }
             }
 
         private:
@@ -58,13 +74,18 @@ namespace usos_rpc {
             WindowsConsole(const WindowsConsole&) = delete;
             WindowsConsole& operator=(const WindowsConsole&) = delete;
 
-            /// @brief Disables all features.
             ~WindowsConsole() {
-                if (_enabled) {
+                disable_features();
+            }
+
+            /// @brief Disables all features.
+            void disable_features() {
+                if (_state == State::MODIFIED) {
                     disable_unicode();
                     if (should_show_colored_output()) {
                         disable_colors();
                     }
+                    _state = State::DEFAULT;
                 }
             }
 
@@ -110,6 +131,8 @@ namespace usos_rpc {
         public:
             /// @brief Enables all features.
             static void enable_features() {}
+            /// @brief Hides/disables console window for the entire duration of this app run.
+            static void hide_permanently() {}
         };
 
     #endif

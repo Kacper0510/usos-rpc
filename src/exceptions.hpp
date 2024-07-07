@@ -23,6 +23,8 @@ namespace usos_rpc {
         DISCORD,
         /// @brief Indicates configuration file loading error.
         CONFIG,
+        /// @brief Indicates Windows registry error.
+        REGISTRY,
     };
 
     /// @brief Exception type formatting function for fmt.
@@ -40,11 +42,13 @@ namespace usos_rpc {
             case ARGUMENTS:
                 return "wrong arguments";
             case DISCORD:
-                return "Discord error";
+                return "Discord";
             case CONFIG:
                 return "wrong config";
+            case REGISTRY:
+                return "registry";
             default:
-                return "unknown error";
+                return "unknown";
         }
     }
 

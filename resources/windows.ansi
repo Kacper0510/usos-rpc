@@ -1,0 +1,4 @@
+    [96mi, install[0m          Installs the program by adding the current executable
+    [96m[0m                    to the autostart list in the Windows registry.
+    [96mu, uninstall[0m        Reverts all registry changes.
+    [96mb, background[0m       Runs the program in the background (no console).

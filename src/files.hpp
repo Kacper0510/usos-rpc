@@ -19,12 +19,12 @@
     #include <unistd.h>
 #endif
 
-namespace {
+namespace usos_rpc {
 
-    /// @brief Returns system-specific home directory.
-    /// @return %AppData% on Windows, $HOME on Unix
+    /// @brief Returns system-specific base directory.
+    /// @return %AppData% on Windows, ~/.config on Unix
     [[nodiscard]]
-    std::filesystem::path get_home_directory() {  // clang-format off
+    std::filesystem::path get_base_directory() {  // clang-format off
         #ifdef _WIN32
             PWSTR result = nullptr;
             SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_CREATE, nullptr, &result);
@@ -36,13 +36,9 @@ namespace {
             if (home == nullptr) {
                 home = getpwuid(getuid())->pw_dir;
             }
-            return std::filesystem::path(home);
+            return std::filesystem::path(home) / ".config";
         #endif
     }  // clang-format on
-
-}
-
-namespace usos_rpc {
 
     /// @brief Returns config directory path based on the value of environmental variable USOS_RPC_DIR
     /// or user's home directory. The path is cached after the first call.
@@ -70,7 +66,7 @@ namespace usos_rpc {
             }
 
             // home directory or AppData
-            path home = get_home_directory();
+            path home = get_base_directory();
             if (is_directory(home)) {
                 home /= "usos-rpc";
                 if (!exists(home)) {

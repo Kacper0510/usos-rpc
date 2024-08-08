@@ -12,7 +12,7 @@ Rich Presence information to Discord, according to the configuration file.
     [96mv, version[0m          Shows full version number and dependencies.
     [96mc, config[0m           Prints currently selected configuration directory
     [96m[0m                    path. See the next section for more information.
-{windows}
+{more}
 [92mEnvironment variables:[0m
     [96mUSOS_RPC_DIR[0m        Changes configuration directory to a custom location.
     [96m[0m                    Must be a valid path. By default, the home directory

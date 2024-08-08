@@ -71,6 +71,7 @@ namespace usos_rpc {
     /// @param ...values values to put in the array
     /// @return std::array of values
     template <typename... T>
+    [[nodiscard]]
     constexpr std::array<typename std::decay<typename std::common_type<T...>::type>::type, sizeof...(T)> make_array(
         T&&... values
     ) {
@@ -85,10 +86,22 @@ namespace usos_rpc {
     /// @param duration2 second duration
     /// @return the minimum
     template <typename T1, typename T2>
+    [[nodiscard]]
     auto min_duration(const T1& duration1, const T2& duration2) {
         using CommonType = typename std::common_type<T1, T2>::type;
         const auto d1 = std::chrono::duration_cast<CommonType>(duration1);
         const auto d2 = std::chrono::duration_cast<CommonType>(duration2);
         return std::min(d1, d2);
     }
+
+    /// @brief Checks whether systemd is used as init system.
+    /// @see https://superuser.com/a/1631444
+    /// @return true if systemd is used as init system, false otherwise or on Windows
+    [[nodiscard]]
+    bool using_systemd() {  // clang-format off
+        #ifndef _WIN32
+            return std::filesystem::exists("/run/systemd/system");
+        #endif
+        return false;
+    }  // clang-format on
 }

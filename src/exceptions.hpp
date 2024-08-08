@@ -25,6 +25,8 @@ namespace usos_rpc {
         CONFIG,
         /// @brief Indicates Windows registry error.
         REGISTRY,
+        /// @brief Indicates systemd command error.
+        SYSTEMD,
     };
 
     /// @brief Exception type formatting function for fmt.
@@ -47,6 +49,8 @@ namespace usos_rpc {
                 return "wrong config";
             case REGISTRY:
                 return "registry";
+            case SYSTEMD:
+                return "systemd command";
             default:
                 return "unknown";
         }

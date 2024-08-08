@@ -11,9 +11,12 @@
 #include "exceptions.hpp"
 #include "logging.hpp"
 #include "preinit.hpp"
+#include "utilities.hpp"
 
 #ifdef _WIN32
     #include "commands/windows.hpp"
+#else
+    #include "commands/systemd.hpp"
 #endif
 
 /// @brief De facto true main function. Chooses appropriate action based on given command, if any.
@@ -41,6 +44,16 @@ void choose_command(std::vector<std::string>& args) {  // clang-format off
             return;
         } else if (commands::check_command(args, "background")) {
             WindowsConsole::hide_permanently();
+        }
+    #else
+        if (using_systemd()) {
+            if (commands::check_command(args, "install")) {
+                commands::install();
+                return;
+            } else if (commands::check_command(args, "uninstall")) {
+                commands::uninstall();
+                return;
+            }
         }
     #endif
 

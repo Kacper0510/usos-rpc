@@ -257,7 +257,7 @@ message("[usos-rpc] Embedded following files: ${resources_str}")
 # Include info about embedded files in build info header
 set(usos-rpc_EMBEDDED_FILES "\n")
 foreach(resource ${resources})
-  if(resource MATCHES ".ansi$")  # Skip automatic unpacking for .ansi files
+  if(resource MATCHES ".ansi$" OR resource MATCHES ".service$")  # Skip automatic unpacking for certain files
     continue()
   endif()
   if(WIN32)

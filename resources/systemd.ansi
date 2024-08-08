@@ -1,0 +1,3 @@
+    [96mi, install[0m          Installs the program by adding the current executable
+    [96m[0m                    as a systemd user service.
+    [96mu, uninstall[0m        Deletes the systemd service.

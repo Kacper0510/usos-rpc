@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../files.hpp"
+#include "../exceptions.hpp"
 
 #include <windows.h>
 

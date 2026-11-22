@@ -3,7 +3,7 @@ Description=Discord activity for USOS timetable
 
 [Service]
 Type=simple
-ExecStart={exec}
+ExecStart={}
 Restart=on-failure
 RestartSec=30
 

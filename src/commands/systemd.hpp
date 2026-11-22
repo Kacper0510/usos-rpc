@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 #include <filesystem>
+#include <format>
 
 #include "../files.hpp"
 #include "../logging.hpp"
@@ -19,10 +20,9 @@ namespace usos_rpc::commands {
         auto service_path = get_base_directory() / "systemd" / "user";
         std::filesystem::create_directories(service_path);
         service_path /= "usos-rpc.service";
-        auto contents = fmt::format(
-            fmt::runtime(b::embed<"resources/usos-rpc.service">().data()),
-            fmt::arg("exec", get_executable_path().c_str())
-        );
+        auto exe_path = get_executable_path().string();
+        auto args = std::make_format_args(exe_path);
+        auto contents = std::vformat(b::embed<"resources/usos-rpc.service">().data(), args);
         write_file(service_path.string(), contents);
 
         auto status = std::system("systemctl --user daemon-reload");
@@ -33,7 +33,7 @@ namespace usos_rpc::commands {
         if (status != 0) {
             throw Exception(ExceptionType::SYSTEMD, "Failed to enable service!");
         }
-        lprint(colors::SUCCESS, "Service enabled successfully!\n");
+        lprint(TextStyle::SUCCESS, "Service enabled successfully!\n");
     }
 
     /// @brief Deletes systemd service.
@@ -45,7 +45,7 @@ namespace usos_rpc::commands {
         }
         auto service_path = get_base_directory() / "systemd" / "user" / "usos-rpc.service";
         std::filesystem::remove(service_path);
-        lprint(colors::SUCCESS, "Service disabled successfully!\n");
+        lprint(TextStyle::SUCCESS, "Service disabled successfully!\n");
     }
 
 }

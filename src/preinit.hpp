@@ -11,9 +11,6 @@
 #include "files.hpp"
 #include "logging.hpp"
 
-#include "date/date.h"
-#include "date/tz.h"
-
 #ifdef _WIN32
     #include <windows.h>
 #endif
@@ -160,12 +157,6 @@ namespace usos_rpc {
         } catch (const std::filesystem::filesystem_error& err) {
             throw Exception(ExceptionType::IO, err.code().message());
         }
-
-        #ifdef _WIN32
-            auto tzdata_path = *get_config_directory() / "tzdata";
-            date::set_install(tzdata_path.string());
-        #endif
-
         initialize_logging();
     }  // clang-format on
 }

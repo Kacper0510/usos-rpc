@@ -16,16 +16,15 @@
 #include "../utilities.hpp"
 #include "build_info.hpp"
 
-#include "date/date.h"
 #include "discord_rpc.h"
-#include "fmt/chrono.h"
 
 namespace {
 
     /// @brief Callback for Discord RPC, invoked when connection to Discord instance is successful.
     /// @param user user logged in the currently running Discord instance
     void handle_discord_ready(const DiscordUser* user) {
-        usos_rpc::lprint(usos_rpc::colors::SUCCESS, "Connected to Discord: {} ({})\n", user->username, user->userId);
+        using namespace usos_rpc;
+        usos_rpc::lprint(TextStyle::SUCCESS, "Connected to Discord: {} ({})\n", styled(user->username, TextStyle::OTHER), user->userId);
     }
 
     /// @brief Callback for Discord RPC, invoked when connection to Discord instance is lost.
@@ -66,19 +65,19 @@ namespace {
                 lprint("Refreshing calendar data...\n");
                 bool changed = config.refresh_calendar();
                 if (changed) {
-                    lprint(colors::SUCCESS, "Calendar data has been refreshed successfully:\n");
+                    lprint(TextStyle::SUCCESS, "Calendar data has been refreshed successfully:\n");
                     lprint("{}\n", config.calendar().name());
                 } else {
                     lprint("Nothing has changed in the calendar since the last check.\n");
                 }
             } catch (const Exception&) {
-                eprint(colors::WARNING, "Calendar refresh failed!\n");
+                eprint(TextStyle::WARNING, "Calendar refresh failed!\n");
             }
 
             lprint(
-                colors::OTHER,
-                "Update interval reached at {}\n",
-                date::format("%Y-%m-%d %H:%M", date::zoned_time(date::current_zone(), next))
+                TextStyle::OTHER,
+                "Update interval reached at {:%Y-%m-%d %H:%M}\n",
+                std::chrono::zoned_time{std::chrono::current_zone(), next}
             );
 
             auto maybe_event = config.calendar().next_event();
@@ -94,15 +93,15 @@ namespace {
                     auto until_start = event->start(config.calendar().time_zone()).get_sys_time() - now;
                     next += min_duration(config.idle_refresh_rate(), until_start + DESYNC_DELAY);
                     if (until_start < std::chrono::days(1)) {
-                        lprint("Next event in {:.0%H:%M:%S}\n", until_start);
+                        lprint("Next event in {:%H:%M:%S}\n", until_start);
                     } else {
                         auto plural = until_start >= std::chrono::days(2) ? "s" : "";
                         lprint("Next event in {:%j} day{}\n", until_start, plural);
                     }
                 }
-                lprint(colors::SUCCESS, "Rich presence has been refreshed successfully!\n");
+                lprint(TextStyle::SUCCESS, "Rich presence has been refreshed successfully!\n");
             } else {
-                eprint(colors::WARNING, "No upcoming events were found!\n");
+                eprint(TextStyle::WARNING, "No upcoming events were found!\n");
                 Discord_ClearPresence();
                 next += config.idle_refresh_rate();
             }
@@ -128,11 +127,11 @@ namespace usos_rpc::commands {
 
     /// @brief Runs the default action of the executable - "service mode".
     void run_default() {
-        lprint(colors::OTHER, "USOS Discord Rich Presence {}\n", VERSION);
+        lprint(TextStyle::OTHER, "USOS Discord Rich Presence {}\n", VERSION);
 
         lprint("Reading configuration file (in {})...\n", get_config_directory()->string());
         auto config = read_config();
-        lprint(colors::SUCCESS, "Configuration file has been read successfully!\n");
+        lprint(TextStyle::SUCCESS, "Configuration file has been read successfully!\n");
 
         std::signal(SIGINT, ctrl_c_signal_handler);
         std::signal(SIGTERM, ctrl_c_signal_handler);
@@ -152,7 +151,7 @@ namespace usos_rpc::commands {
             throw;
         }
         Discord_Shutdown();
-        lprint(colors::SUCCESS, "Rich presence has been stopped successfully!\n");
+        lprint(TextStyle::SUCCESS, "Rich presence has been stopped successfully!\n");
     }
 
 }

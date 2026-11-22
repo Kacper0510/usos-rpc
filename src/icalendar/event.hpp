@@ -11,11 +11,6 @@
 #include "../exceptions.hpp"
 #include "utilities.hpp"
 
-#include "date/date.h"
-#include "date/tz.h"
-#include "fmt/color.h"
-#include "fmt/format.h"
-
 namespace usos_rpc::icalendar {
 
     /// @brief Represents a single event in the timetable, for example a lecture or a class.
@@ -44,9 +39,9 @@ namespace usos_rpc::icalendar {
         Location _location;
 
         /// @brief Date and time of the beginning of the event.
-        date::local_seconds _start;
+        std::chrono::local_seconds _start;
         /// @brief Date and time of the end of the event.
-        date::local_seconds _end;
+        std::chrono::local_seconds _end;
 
     public:
         Event() = delete;
@@ -85,10 +80,10 @@ namespace usos_rpc::icalendar {
             try {
                 std::istringstream start_stream(dtstart);
                 start_stream.exceptions(std::ios_base::badbit);
-                start_stream >> date::parse("%Y%m%dT%H%M%S", _start);
+                start_stream >> std::chrono::parse("%Y%m%dT%H%M%S", _start);
                 std::istringstream end_stream(dtend);
                 end_stream.exceptions(std::ios_base::badbit);
-                end_stream >> date::parse("%Y%m%dT%H%M%S", _end);
+                end_stream >> std::chrono::parse("%Y%m%dT%H%M%S", _end);
             } catch (const std::ios_base::failure& err) {
                 throw Exception(ExceptionType::ICALENDAR, "Could not parse event timestamp!");
             }
@@ -182,29 +177,29 @@ namespace usos_rpc::icalendar {
         /// @brief Returns date and time of the beginning of the event.
         /// @return start of the event
         [[nodiscard]]
-        const date::local_seconds& start() const {
+        const std::chrono::local_seconds& start() const {
             return _start;
         }
 
         /// @brief Returns date and time of the end of the event.
         /// @return end of the event
         [[nodiscard]]
-        const date::local_seconds& end() const {
+        const std::chrono::local_seconds& end() const {
             return _end;
         }
 
         /// @brief Returns date and time of the beginning of the event as a zoned time.
         /// @return zoned start of the event
         [[nodiscard]]
-        const date::zoned_seconds start(const date::time_zone* tz) const {
-            return date::zoned_seconds(tz, _start);
+        const std::chrono::zoned_seconds start(const std::chrono::time_zone* tz) const {
+            return std::chrono::zoned_seconds(tz, _start);
         }
 
         /// @brief Returns date and time of the end of the event as a zoned time.
         /// @return zoned end of the event
         [[nodiscard]]
-        const date::zoned_seconds end(const date::time_zone* tz) const {
-            return date::zoned_seconds(tz, _end);
+        const std::chrono::zoned_seconds end(const std::chrono::time_zone* tz) const {
+            return std::chrono::zoned_seconds(tz, _end);
         }
 
         /// @brief Compares by unique identifier.
@@ -221,28 +216,39 @@ namespace usos_rpc::icalendar {
             return std::tie(_start, _end, _uid) <=> std::tie(other._start, other._end, other._uid);
         }
 
-        /// @brief Event formatting support for fmt.
-        /// @param event event to format
-        /// @return formatted string
-        friend auto format_as(const Event& event) {
-            auto start = date::format("%Y-%m-%d %H:%M", event._start);
-            auto end = date::format("%H:%M", event._end);
+        friend struct std::formatter<Event>;
+    };
 
-            std::string location;
+}
+
+namespace std {
+
+    template <>
+    struct formatter<usos_rpc::icalendar::Event> {
+        constexpr auto parse(format_parse_context& ctx) {
+            auto it = ctx.begin();
+            if (it != ctx.end() && *it != '}') {
+                throw format_error("Invalid format specifier for Event");
+            }
+            return it;
+        }
+
+        auto format(const usos_rpc::icalendar::Event& event, format_context& ctx) const {
+            auto start = std::format("{:%Y-%m-%d %H:%M}", event._start);
+            auto end = std::format("{:%H:%M}", event._end);
+
+            string location;
             if (event.has_full_location()) {
-                location = fmt::format(
-                    "{} - {}, {}",
-                    std::get<Event::FullLocation>(event._location).room,
-                    std::get<Event::FullLocation>(event._location).building,
-                    std::get<Event::FullLocation>(event._location).address
-                );
-            } else if (std::holds_alternative<std::string>(event._location)) {
-                location = std::get<std::string>(event._location);
+                const auto& full = get<usos_rpc::icalendar::Event::FullLocation>(event._location);
+                location = std::format("{} - {}, {}", full.room, full.building, full.address);
+            } else if (holds_alternative<string>(event._location)) {
+                location = get<string>(event._location);
             }
 
-            return fmt::format(
+            return std::format_to(
+                ctx.out(),
                 "{} - {} ({} - {}):\n{}\n",
-                fmt::styled(event._subject, colors::OTHER),
+                usos_rpc::styled(event._subject, usos_rpc::TextStyle::OTHER),
                 event._type.value_or("???"),
                 start,
                 end,

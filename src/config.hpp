@@ -8,6 +8,7 @@
 #include <optional>
 #include <regex>
 #include <string>
+#include <format>
 
 #include "exceptions.hpp"
 #include "files.hpp"
@@ -121,10 +122,10 @@ namespace usos_rpc {
             static DiscordRichPresence presence;
 
             subject = event.type().has_value()
-                ? fmt::format("{} - {}", event.subject(), event.type().value())
+                ? std::format("{} - {}", event.subject(), event.type().value())
                 : event.subject();
             location = event.has_full_location()
-                ? std::optional(fmt::format("{} - {}", *event.room(), *event.building()))
+                ? std::optional(std::format("{} - {}", *event.room(), *event.building()))
                 : std::nullopt;
             presence = {
                 .state = location.transform(&std::string::c_str).value_or(nullptr),

@@ -5,6 +5,7 @@
 
 #include <exception>
 #include <string>
+#include <string_view>
 
 #include "logging.hpp"
 
@@ -29,10 +30,10 @@ namespace usos_rpc {
         SYSTEMD,
     };
 
-    /// @brief Exception type formatting function for fmt.
+    /// @brief Exception type formatting function for std::format.
     /// @param type exception type
-    /// @return formatted string
-    inline auto format_as(const ExceptionType& type) {
+    /// @return string view of the formatted exception category
+    constexpr std::string_view to_string_view(ExceptionType type) noexcept {
         using enum ExceptionType;
         switch (type) {
             case IO:
@@ -56,6 +57,21 @@ namespace usos_rpc {
         }
     }
 
+}
+
+namespace std {
+
+    template <>
+    struct formatter<usos_rpc::ExceptionType> : formatter<string_view> {
+        auto format(usos_rpc::ExceptionType type, format_context& ctx) const {
+            return formatter<string_view>::format(usos_rpc::to_string_view(type), ctx);
+        }
+    };
+
+}
+
+namespace usos_rpc {
+
     /// @brief Exception class for usos-rpc.
     /// All constructors log thrown exception to stderr.
     class Exception: public std::exception {
@@ -69,25 +85,25 @@ namespace usos_rpc {
         /// @param type exception type
         /// @param message exception message
         Exception(ExceptionType type, const char* message): _message(message), _type(type) {
-            eprint(colors::WARNING, "Warning - {}: {}\n", _type, _message);
+            eprint(TextStyle::WARNING, "Warning - {}: {}\n", _type, _message);
         }
 
         /// @brief Constructor from an std::string.
         /// @param type exception type
         /// @param message exception message
         Exception(ExceptionType type, const std::string& message): _message(message), _type(type) {
-            eprint(colors::WARNING, "Warning - {}: {}\n", _type, _message);
+            eprint(TextStyle::WARNING, "Warning - {}: {}\n", _type, _message);
         }
 
-        /// @brief Constructor based on fmt::format.
+        /// @brief Constructor based on std::format.
         /// @tparam ...T types to interpolate
+        /// @param type exception type
         /// @param fmt_str format string with curly braces
         /// @param ...args arguments to interpolate
-        /// @param type exception type
         template <typename... T>
-        Exception(ExceptionType type, fmt::format_string<T...> fmt_str, T&&... args): _type(type) {
-            _message = fmt::vformat(fmt_str, fmt::make_format_args(args...));
-            eprint(colors::WARNING, "Warning - {}: {}\n", _type, _message);
+        Exception(ExceptionType type, std::format_string<T...> fmt_str, T&&... args) : _type(type),
+            _message(std::format(fmt_str, std::forward<T>(args)...)) {
+            eprint(TextStyle::WARNING, "Warning - {}: {}\n", _type, _message);
         }
 
         /// @brief Returns the exception message.
@@ -98,11 +114,26 @@ namespace usos_rpc {
 
         virtual ~Exception() {}
 
-        /// @brief Exception formatting support for fmt.
-        /// @param e the exception to format
-        /// @return formatted string
-        friend auto format_as(const Exception& e) {
-            return fmt::format("{}: {}", e._type, e._message);
+        friend struct std::formatter<Exception>;
+    };
+
+}
+
+namespace std {
+
+    template <>
+    struct formatter<usos_rpc::Exception> {
+        constexpr auto parse(format_parse_context& ctx) {
+            auto it = ctx.begin();
+            if (it != ctx.end() && *it != '}') {
+                throw format_error("Invalid format specifier for Exception");
+            }
+            return it;
+        }
+
+        auto format(const usos_rpc::Exception& e, format_context& ctx) const {
+            return format_to(ctx.out(), "{}: {}", e._type, e._message);
         }
     };
+
 }

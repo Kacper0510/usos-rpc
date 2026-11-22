@@ -71,13 +71,13 @@ int main(const int argc, const char* argv[]) {
         auto args = usos_rpc::commands::create_arguments_vector(argc, argv);
         choose_command(args);
     } catch (const usos_rpc::Exception& e) {
-        usos_rpc::eprint(usos_rpc::colors::FATAL_ERROR, "Fatal error - {}\n", e);
+        usos_rpc::eprint(usos_rpc::TextStyle::FATAL_ERROR, "Fatal error - {}\n", e);
         return 1;
     } catch (const std::exception& e) {
-        usos_rpc::eprint(usos_rpc::colors::FATAL_ERROR, "Fatal error: {}\n", e.what());
+        usos_rpc::eprint(usos_rpc::TextStyle::FATAL_ERROR, "Fatal error: {}\n", e.what());
         return 1;
     } catch (...) {
-        usos_rpc::eprint(usos_rpc::colors::FATAL_ERROR, "Unknown fatal error!\n");
+        usos_rpc::eprint(usos_rpc::TextStyle::FATAL_ERROR, "Unknown fatal error!\n");
         return 1;
     }
     return 0;

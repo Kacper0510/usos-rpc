@@ -3,18 +3,13 @@
 
 #pragma once
 
+#include <format>
 #include <chrono>
 #include <optional>
 #include <set>
 #include <string>
 
 #include "event.hpp"
-
-#include "date/date.h"
-#include "date/tz.h"
-#include "fmt/color.h"
-#include "fmt/format.h"
-#include "fmt/xchar.h"
 
 namespace usos_rpc::icalendar {
 
@@ -25,7 +20,7 @@ namespace usos_rpc::icalendar {
         /// @brief Product identifier of the software that generated this calendar file.
         std::string _product_id;
         /// @brief Calendar time zone, applied to all event timestamps.
-        const date::time_zone* _time_zone;
+        const std::chrono::time_zone* _time_zone;
         /// @brief List of events.
         std::set<Event> _events;
 
@@ -43,7 +38,7 @@ namespace usos_rpc::icalendar {
         _name(calname),
         _product_id(prodid),
         _events(events) {
-            _time_zone = date::locate_zone(timezone);
+            _time_zone = std::chrono::locate_zone(timezone);
         }
 
         /// @brief Returns an iterator to the current/upcoming event, or nullopt if none were found.
@@ -79,7 +74,7 @@ namespace usos_rpc::icalendar {
         /// @brief Returns the calendar time zone.
         /// @return time zone
         [[nodiscard]]
-        const date::time_zone* time_zone() const {
+        const std::chrono::time_zone* time_zone() const {
             return _time_zone;
         }
 
@@ -90,17 +85,43 @@ namespace usos_rpc::icalendar {
             return _events;
         }
 
-        /// @brief Calendar formatting support for fmt.
-        /// @param event event to format
-        /// @return formatted string
-        friend auto format_as(const Calendar& event) {
-            return fmt::format(
+        friend struct std::formatter<Calendar>;
+    };
+
+}
+
+namespace std {
+
+    template <>
+    struct formatter<usos_rpc::icalendar::Calendar> {
+        constexpr auto parse(format_parse_context& ctx) {
+            auto it = ctx.begin();
+            if (it != ctx.end() && *it != '}') {
+                throw format_error("Invalid format specifier for Calendar");
+            }
+            return it;
+        }
+
+        auto format(const usos_rpc::icalendar::Calendar& event, format_context& ctx) const {
+            string joined_events;
+            bool first = true;
+            for (const auto& ev : event._events) {
+                if (!first) {
+                    joined_events.push_back('\n');
+                }
+                first = false;
+                std::format_to(back_inserter(joined_events), "{}", ev);
+            }
+
+            return std::format_to(
+                ctx.out(),
                 "{}\nProduct ID: {}\nTime zone: {}\nEvents:\n\n{}",
-                fmt::styled(event._name, colors::OTHER),
+                usos_rpc::styled(event._name, usos_rpc::TextStyle::OTHER),
                 event._product_id,
                 event._time_zone->name(),
-                fmt::join(event._events, "\n")
+                joined_events
             );
         }
     };
+
 }

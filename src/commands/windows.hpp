@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <format>
+
 #include "../files.hpp"
 #include "../exceptions.hpp"
 
@@ -18,7 +20,7 @@ namespace usos_rpc::commands {
     /// @brief Creates or modifies autostart entry.
     /// @throws usos_rpc::Exception when registry operations fail
     void install() {
-        auto exe_path = fmt::format(L"\"{}\" -b", get_executable_path().native());
+        auto exe_path = std::wformat(L"\"{}\" -b", get_executable_path().native());
         auto status = RegSetKeyValueW(
             HKEY_CURRENT_USER,
             AUTOSTART_KEY,
@@ -42,7 +44,7 @@ namespace usos_rpc::commands {
             LocalFree(error_message);
             throw ex;
         }
-        lprint(colors::SUCCESS, "Autostart enabled successfully!\n");
+        lprint(TextStyle::SUCCESS, "Autostart enabled successfully!\n");
     }
 
     /// @brief Deletes autostart entry.
@@ -61,7 +63,7 @@ namespace usos_rpc::commands {
         if (status != ERROR_SUCCESS) {
             goto handle_error;
         }
-        lprint(colors::SUCCESS, "Autostart disabled successfully!\n");
+        lprint(TextStyle::SUCCESS, "Autostart disabled successfully!\n");
         return;
 
     handle_error:

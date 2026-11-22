@@ -4,6 +4,7 @@
 #pragma once
 
 #include <algorithm>
+#include <format>
 
 #include "../files.hpp"
 #include "../logging.hpp"
@@ -32,13 +33,10 @@ namespace usos_rpc::commands {
                 more_help = b::embed<"resources/systemd.ansi">().data();
             }
         #endif
-        lprint(
-            fmt::runtime(b::embed<"resources/help.ansi">().data()),
-            fmt::arg("version", VERSION),
-            fmt::arg("exe_name", get_executable_path().filename().string()),
-            fmt::arg("github_url", GITHUB_URL),
-            fmt::arg("more", more_help)
-        );
+        auto exe_name = get_executable_path().filename().string();
+        auto args = std::make_format_args(VERSION, exe_name, more_help, GITHUB_URL);
+        auto content = std::vformat(b::embed<"resources/help.ansi">().data(), args);
+        lprint("{}", content);
     }  // clang-format on
 
     /// @brief Prints the auto-selected config directory.

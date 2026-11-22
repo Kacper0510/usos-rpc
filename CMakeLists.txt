@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.22)
-project(usos-rpc VERSION 1.0.1 HOMEPAGE_URL "github.com/Kacper0510/usos-rpc")
-set(usos-rpc_COPYRIGHT "(c) 2024 Kacper Wojciuch <wkacper@spoko.pl>")
+cmake_minimum_required(VERSION 3.24)  # Colored diagnostics
+project(usos-rpc VERSION 1.1.0 HOMEPAGE_URL "github.com/Kacper0510/usos-rpc")
+set(usos-rpc_COPYRIGHT "(c) 2024-2026 Kacper Wojciuch <kacper.b.wojciuch@gmail.com>")
 message("[usos-rpc] Starting CMake configuration")
 
 #[==============================[
@@ -10,6 +10,7 @@ message("[usos-rpc] Starting CMake configuration")
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_C_STANDARD 23)
 set(BUILD_SHARED_LIBS OFF)
+set(CMAKE_COLOR_DIAGNOSTICS ON)
 
 # For VS Code
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -69,24 +70,6 @@ if(NOT GIT_EXECUTABLE)
 endif()
 
 
-#[===[ fmt ]===]#
-# Text formatting library, implementation of C++23 <format> header.
-set(fmt_version cf1f55f7985c4dd53f32f07a34d8fad5cdb2dc61)
-
-FetchContent_Declare(
-  fmt
-  GIT_REPOSITORY "https://github.com/fmtlib/fmt.git"
-  GIT_TAG ${fmt_version}
-  SYSTEM
-)
-FetchContent_MakeAvailable(fmt)
-target_link_libraries(usos-rpc fmt::fmt)
-
-get_directory_property(fmt_version DIRECTORY ${fmt_SOURCE_DIR} DEFINITION FMT_VERSION)  # Real version
-string(APPEND usos-rpc_DEPENDENCIES "\"{fmt} ${fmt_version}\",\n")
-message("[usos-rpc] Completed fetching 'fmt'")
-
-
 #[===[ libcurl ]===]#
 # HTTP requests library.
 set(curl_version curl-8_7_1)
@@ -123,35 +106,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(curl)
 target_link_libraries(usos-rpc libcurl)
 message("[usos-rpc] Completed fetching 'libcurl'")
-
-
-#[===[ date ]===]#
-# Date and time library, implementation of C++20 <chrono> header.
-set(date_version 8f8336f42be73f4eefb042c3807a5b4399422fed)
-
-set(BUILD_TZ_LIB ON)
-
-if(WIN32)
-  set(MANUAL_TZ_DB ON)
-  # Fix for MSVC build
-  target_compile_definitions(usos-rpc PRIVATE NOMINMAX)
-else()
-  set(USE_SYSTEM_TZ_DB ON)
-endif()
-
-FetchContent_Declare(
-  date_src
-  GIT_REPOSITORY "https://github.com/HowardHinnant/date.git"
-  GIT_TAG "${date_version}"
-  SYSTEM
-)
-FetchContent_MakeAvailable(date_src)
-target_link_libraries(usos-rpc date::date)
-target_link_libraries(usos-rpc date::date-tz)
-
-get_directory_property(date_version DIRECTORY ${date_src_SOURCE_DIR} DEFINITION date_VERSION)  # Real version
-string(APPEND usos-rpc_DEPENDENCIES "\"HowardHinnant/date ${date_version}\",\n")
-message("[usos-rpc] Completed fetching 'date'")
 
 
 #[===[ DiscordRPC ]===]#
@@ -209,35 +163,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(battery-embed)
 string(APPEND usos-rpc_DEPENDENCIES "\"battery-embed ${battery_embed_version}\",\n")
 message("[usos-rpc] Completed fetching 'battery-embed'")
-
-
-#[===[ tzdata ]===]#
-# IANA time zone database, needed for 'date' on Windows.
-if(WIN32)
-  FetchContent_Declare(
-    tzdata
-    URL "https://www.iana.org/time-zones/repository/tzdata-latest.tar.gz"
-    DOWNLOAD_EXTRACT_TIMESTAMP OFF
-  )
-  FetchContent_MakeAvailable(tzdata)
-
-  file(GLOB tzdata_files "${tzdata_SOURCE_DIR}/*")
-  list(FILTER tzdata_files EXCLUDE REGEX "^.+\\/[A-Z]+$")  # All capital letters
-  file(COPY ${tzdata_files} DESTINATION "${PROJECT_SOURCE_DIR}/resources/tzdata"
-    PATTERN "*.awk" EXCLUDE
-    PATTERN "*.html" EXCLUDE
-    PATTERN "Makefile" EXCLUDE
-  )
-  
-  # Windows time zones file must be downloaded separately
-  file(DOWNLOAD
-    "https://raw.githubusercontent.com/unicode-org/cldr/main/common/supplemental/windowsZones.xml"
-    "${PROJECT_SOURCE_DIR}/resources/tzdata/windowsZones.xml"
-  )
-  message("[usos-rpc] Completed fetching 'tzdata'")
-else()
-  file(REMOVE_RECURSE "${PROJECT_SOURCE_DIR}/resources/tzdata")
-endif()
 
 #[==============================[
   Embedded files

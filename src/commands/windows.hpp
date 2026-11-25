@@ -20,14 +20,14 @@ namespace usos_rpc::commands {
     /// @brief Creates or modifies autostart entry.
     /// @throws usos_rpc::Exception when registry operations fail
     void install() {
-        auto exe_path = std::wformat(L"\"{}\" -b", get_executable_path().native());
+        auto exe_path = std::format(L"\"{}\" -b", get_executable_path().native());
         auto status = RegSetKeyValueW(
             HKEY_CURRENT_USER,
             AUTOSTART_KEY,
             L"usos-rpc",
             REG_SZ,
             exe_path.c_str(),
-            (std::wcslen(exe_path.c_str()) + 1) * sizeof(wchar_t)
+            static_cast<DWORD>((exe_path.length() + 1) * sizeof(wchar_t))
         );
         if (status != ERROR_SUCCESS) {
             LPTSTR error_message = nullptr;

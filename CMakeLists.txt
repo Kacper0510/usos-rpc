@@ -33,6 +33,11 @@ target_sources(usos-rpc PRIVATE ${sources})
 # No subfolders in bin on MSVC
 set_property(TARGET usos-rpc PROPERTY RUNTIME_OUTPUT_DIRECTORY $<1:${PROJECT_SOURCE_DIR}/bin>)
 
+# Do not define min and max macros on Windows, as they conflict with std::min and std::max
+if(WIN32)
+  target_compile_definitions(usos-rpc PRIVATE NOMINMAX)
+endif()
+
 #[==============================[
   Additional warnings
 ]==============================]#

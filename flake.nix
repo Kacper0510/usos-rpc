@@ -65,7 +65,7 @@
             [
               (cmakeSrc "BATTERY-EMBED" battery-embed-src)
               (cmakeSrc "DISCORD-RPC" discord-rpc-src)
-              (lib.cmakeFeature "git_commit_string" self.dirtyShortRev)
+              (lib.cmakeFeature "git_commit_string" (self.dirtyShortRev or self.shortRev))
             ];
           enableParallelBuilding = true;
 

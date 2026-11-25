@@ -1,16 +1,16 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 5dad9e9..4e1211b 100644
+index 5dad9e9..fc2ef6f 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,5 +1,5 @@
 -cmake_minimum_required (VERSION 3.2.0)
 -project (DiscordRPC)
-+cmake_minimum_required(VERSION 3.22)
++cmake_minimum_required(VERSION 3.24)
 +project(DiscordRPC)
  
  include(GNUInstallDirs)
  
-@@ -12,41 +12,25 @@ file(GLOB_RECURSE ALL_SOURCE_FILES
+@@ -12,41 +12,30 @@ file(GLOB_RECURSE ALL_SOURCE_FILES
      src/*.cpp src/*.h src/*.c
  )
  
@@ -36,7 +36,7 @@ index 5dad9e9..4e1211b 100644
 +include(FetchContent)
 +
 +set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
-+set(rapidjson_version ebd87cb468fb4cb060b37e579718c4a4125416c1)
++set(rapidjson_version 24b5e7a8b27f42fa16b96fc70aade9106cf7102f)
 +set(RAPIDJSON_BUILD_DOC OFF)
 +set(RAPIDJSON_BUILD_EXAMPLES OFF)
 +set(RAPIDJSON_BUILD_TESTS OFF)
@@ -47,6 +47,7 @@ index 5dad9e9..4e1211b 100644
 +  GIT_REPOSITORY "https://github.com/Tencent/rapidjson.git"
 +  GIT_TAG ${rapidjson_version}
 +  SYSTEM
++  FIND_PACKAGE_ARGS NAMES RapidJSON rapidjson
  )
 -
 -find_file(RAPIDJSONTEST NAMES rapidjson rapidjson-1.1.0 PATHS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty CMAKE_FIND_ROOT_PATH_BOTH)
@@ -66,7 +67,11 @@ index 5dad9e9..4e1211b 100644
 -add_library(rapidjson STATIC IMPORTED ${RAPIDJSON})
 +FetchContent_MakeAvailable(rapidjson)
 +link_libraries(RapidJSON)
-+include_directories(SYSTEM "${rapidjson_SOURCE_DIR}/include")
++if(rapidjson_SOURCE_DIR)
++  include_directories(SYSTEM "${rapidjson_SOURCE_DIR}/include")
++else()
++  include_directories(SYSTEM ${RapidJSON_INCLUDE_DIRS})
++endif()
  
  # add subdirs
  

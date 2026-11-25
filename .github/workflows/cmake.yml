@@ -2,9 +2,8 @@ name: CMake build on Windows and Linux
 
 on:
   push:
-    branches: [ "master" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [master]
 
 jobs:
   build:
@@ -13,24 +12,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, windows-2022]
+        os: [ubuntu-26.04, windows-2025]
         build_type: [Release]
-        c_compiler: [gcc-14, cl]
+        c_compiler: [clang-22, cl]
         include:
-          - os: windows-2022
+          - os: windows-2025
             c_compiler: cl
             cpp_compiler: cl
-          - os: ubuntu-24.04
-            c_compiler: gcc-14
-            cpp_compiler: g++-14
+          - os: ubuntu-26.04
+            c_compiler: clang-22
+            cpp_compiler: clang++-22
         exclude:
-          - os: windows-2022
-            c_compiler: gcc-14
-          - os: ubuntu-24.04
+          - os: windows-2025
+            c_compiler: clang-22
+          - os: ubuntu-26.04
             c_compiler: cl
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set reusable strings
       id: strings
@@ -45,13 +44,14 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DFETCHCONTENT_TRY_FIND_PACKAGE_MODE=NEVER
         -S ${{ github.workspace }}
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
     
     - name: Upload a build artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: usos-rpc-${{ matrix.os }}
         path: ${{ steps.strings.outputs.binary-output-dir }}/*

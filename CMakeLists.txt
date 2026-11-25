@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)  # Colored diagnostics
+cmake_minimum_required(VERSION 3.24)  # Colored diagnostics, FIND_PACKAGE_ARGS
 project(usos-rpc VERSION 1.1.0 HOMEPAGE_URL "github.com/Kacper0510/usos-rpc")
 set(usos-rpc_COPYRIGHT "(c) 2024-2026 Kacper Wojciuch <kacper.b.wojciuch@gmail.com>")
 message("[usos-rpc] Starting CMake configuration")
@@ -8,7 +8,10 @@ message("[usos-rpc] Starting CMake configuration")
 ]==============================]#
 
 set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 23)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
 set(BUILD_SHARED_LIBS OFF)
 set(CMAKE_COLOR_DIAGNOSTICS ON)
 
@@ -65,14 +68,15 @@ set(usos-rpc_DEPENDENCIES "\n")
 #[===[ git ]===]#
 # Necessary for the build.
 find_package(Git)
-if(NOT GIT_EXECUTABLE)
+set(git_commit_string CACHE STRING "")
+if(NOT GIT_EXECUTABLE AND git_commit_string STREQUAL "")
   message(FATAL_ERROR "[usos-rpc] 'git' not found - you need to install it!")
 endif()
 
 
 #[===[ libcurl ]===]#
 # HTTP requests library.
-set(curl_version curl-8_7_1)
+set(curl_version curl-8_23_0)
 
 set(BUILD_CURL_EXE OFF)
 set(BUILD_STATIC_LIBS ON)
@@ -95,17 +99,24 @@ set(CURL_DISABLE_KERBEROS_AUTH ON)
 set(CURL_DISABLE_NEGOTIATE_AUTH ON)
 set(CURL_DISABLE_HTTP_AUTH ON)
 set(CURL_DISABLE_AWS ON)
+set(CURL_USE_LIBPSL OFF)
 set(HTTP_ONLY ON)
 
 FetchContent_Declare(
-  curl
+  CURL
   GIT_REPOSITORY "https://github.com/curl/curl.git"
   GIT_TAG ${curl_version}
   SYSTEM
+  FIND_PACKAGE_ARGS
 )
-FetchContent_MakeAvailable(curl)
-target_link_libraries(usos-rpc libcurl)
-message("[usos-rpc] Completed fetching 'libcurl'")
+FetchContent_MakeAvailable(CURL)
+target_link_libraries(usos-rpc CURL::libcurl)
+
+if(CURL_FOUND)
+  message("[usos-rpc] Using system-provided 'libcurl'")
+else()
+  message("[usos-rpc] Completed fetching 'libcurl'")
+endif()
 
 
 #[===[ DiscordRPC ]===]#
@@ -141,17 +152,23 @@ FetchContent_Declare(
   GIT_REPOSITORY "https://github.com/marzer/tomlplusplus.git"
   GIT_TAG ${tomlplusplus_version}
   SYSTEM
+  FIND_PACKAGE_ARGS
 )
 FetchContent_MakeAvailable(tomlplusplus)
 target_link_libraries(usos-rpc tomlplusplus::tomlplusplus)
 
+if(tomlplusplus_FOUND)
+  message("[usos-rpc] Using system-provided 'tomlplusplus'")
+else()
+  message("[usos-rpc] Completed fetching 'tomlplusplus'")
+endif()
+
 string(APPEND usos-rpc_DEPENDENCIES "\"toml++ ${tomlplusplus_version}\",\n")
-message("[usos-rpc] Completed fetching 'tomlplusplus'")
 
 
 #[===[ battery-embed ]===]#
 # Embedding files into the executable.
-set(battery_embed_version v1.2.15)
+set(battery_embed_version v1.2.19)
 
 set(B_PRODUCTION_MODE ON)
 
@@ -198,12 +215,16 @@ endforeach()
   Build information header
 ]==============================]#
 
-execute_process(
-  COMMAND ${GIT_EXECUTABLE} describe --always --dirty --exclude '*'
-  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-  OUTPUT_VARIABLE git_commit_string
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+if(git_commit_string STREQUAL "")
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} describe --always --dirty --exclude '*'
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    OUTPUT_VARIABLE git_commit_string
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+  )
+endif()
+
 if(git_commit_string STREQUAL "")
   set(usos-rpc_FULL_VERSION "${CMAKE_PROJECT_VERSION}")
 else()
